@@ -1,0 +1,13 @@
+﻿@model AppointAid.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Doctor Login";
+}
+
+<h2>Login as Doctor</h2>
+
+<form method="post" asp-action="DoctorLogin">
+    <input type="text" name="NationalNumber" placeholder="National Number" required />
+    <input type="password" name="Password" placeholder="Password" required />
+    <input type="submit" value="DoctorLogin" />
+</form>
