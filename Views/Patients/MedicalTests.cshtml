@@ -1,0 +1,79 @@
+﻿@{
+    ViewData["Title"] = "Medical Tests";
+    var upcomingTests = ViewBag.UpcomingTests as List<AppointAid.Models.MedicalTest> ?? new List<AppointAid.Models.MedicalTest>();
+    var previousTests = ViewBag.PreviousTests as List<AppointAid.Models.MedicalTest> ?? new List<AppointAid.Models.MedicalTest>();
+}
+
+<div class="container mt-4">
+    <h1 class="text-center">Medical Tests</h1>
+
+    <!-- Upcoming Tests -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="m-0">Upcoming Tests</h4>
+        </div>
+        <div class="card-body">
+            @if (upcomingTests.Any())
+            {
+                @foreach (var test in upcomingTests)
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p><strong>Test:</strong> @test.TestName</p>
+                            <p><strong>Medical Center:</strong> @test.Doctor?.Sector?.MedicalCenter?.MedicalCenterName ?? "Unknown"</p>
+                            <p><strong>Sector:</strong> @test.Doctor?.Sector?.Name ?? "Unknown"</p>
+                            <p><strong>Date:</strong> @test.Time?.ToString("MMMM dd, yyyy h:mm tt") ?? "Not Scheduled"</p>
+                            <p><strong>Status:</strong> Confirmed</p>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-primary btn-sm">Get Location</button>
+                                <button class="btn btn-warning btn-sm">Reschedule</button>
+                                <button class="btn btn-danger btn-sm">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No upcoming tests available.</p>
+            }
+        </div>
+        <div class="card-footer text-center">
+            <a class="btn btn-primary" asp-controller="Patients" asp-action="RequestMedicalTest">
+                <i class="bi bi-plus-circle"></i> Request New Test
+            </a>
+        </div>
+    </div>
+
+    <!-- Previous Tests -->
+    <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h4 class="m-0">Previous Tests</h4>
+        </div>
+        <div class="card-body">
+            @if (previousTests.Any())
+            {
+                @foreach (var test in previousTests)
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p><strong>Test:</strong> @test.TestName</p>
+                            <p><strong>Medical Center:</strong> @test.Doctor?.Sector?.MedicalCenter?.MedicalCenterName ?? "Unknown"</p>
+                            <p><strong>Sector:</strong> @test.Doctor?.Sector?.Name ?? "Unknown"</p>
+                            <p><strong>Date:</strong> @test.Time?.ToString("MMMM dd, yyyy h:mm tt") ?? "Not Scheduled"</p>
+                            <p><strong>Status:</strong> Completed</p>
+                            <button class="btn btn-info btn-sm">View Results</button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No previous tests available.</p>
+            }
+        </div>
+        <div class="card-footer text-center">
+            <button class="btn btn-secondary">More</button>
+        </div>
+    </div>
+</div>

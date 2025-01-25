@@ -62,8 +62,16 @@ namespace AppointAid.Controllers
                 if (PasswordHasher.VerifyPassword(storedPasswordHash, model.Password))
                 {
                     TempData["Message"] = $"Welcome back, {model.Role}!";
+
+                    // Set common session values
                     HttpContext.Session.SetString("UserRole", model.Role);
                     HttpContext.Session.SetString("UserId", model.NationalNumber);
+
+                    // Set PatientId in the session if the role is Patient
+                    if (model.Role == "Patient" && user is Patient patient)
+                    {
+                        HttpContext.Session.SetInt32("PatientId", patient.PatientId);
+                    }
 
                     return model.Role switch
                     {
@@ -90,7 +98,7 @@ namespace AppointAid.Controllers
         {
             HttpContext.Session.Clear();
             TempData["Message"] = "You have been logged out.";
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Account");
         }
 
         [HttpGet]

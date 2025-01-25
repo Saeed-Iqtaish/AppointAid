@@ -10,7 +10,7 @@
 
     <!-- Approved Requests -->
     <div class="card mt-4">
-        <div class="card-header">
+        <div class="card-header bg-primary text-white">
             <h4>Approved Requests</h4>
         </div>
         <div class="card-body">
@@ -50,10 +50,18 @@
 
     <!-- Upcoming Appointments/Tests -->
     <div id="dynamic-card" class="card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <button id="prev-card" class="btn btn-outline-primary btn-sm">&#8592;</button>
+        <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+            <button id="prev-card"
+                    class="btn btn-outline-light btn-lg"
+                    style="font-size: 1.5rem; padding: 0.5rem 1rem; border: 2px solid white;">
+                &#8592;
+            </button>
             <h4 id="dynamic-title" class="text-center flex-grow-1 m-0">Upcoming Appointments</h4>
-            <button id="next-card" class="btn btn-outline-primary btn-sm">&#8594;</button>
+            <button id="next-card"
+                    class="btn btn-outline-light btn-lg"
+                    style="font-size: 1.5rem; padding: 0.5rem 1rem; border: 2px solid white;">
+                &#8594;
+            </button>
         </div>
         <div id="dynamic-content" class="card-body">
             <ul id="dynamic-list">
@@ -104,17 +112,17 @@
     {
         @foreach (var test in upcomingTests)
         {
-                                        <li>
-                                            <strong>Test:</strong> @test.TestName <br />
-                                            <strong>Date:</strong> @test.Time.ToString("g")
-                                            <button class="btn btn-warning btn-sm">Reschedule</button>
-                                            <button class="btn btn-danger btn-sm">Cancel</button>
-                                        </li>
+                    <li>
+                        <strong>Test:</strong> @test.TestName <br />
+                        <strong>Date:</strong> @(test.Time.HasValue ? test.Time.Value.ToString("g") : "Not Scheduled")
+                        <button class="btn btn-warning btn-sm">Reschedule</button>
+                        <button class="btn btn-danger btn-sm">Cancel</button>
+                    </li>
         }
     }
     else
     {
-                            <li>No upcoming tests available.</li>
+            <li>No upcoming tests available.</li>
     }
                 `;
                 dynamicButton.textContent = "Request New Test";

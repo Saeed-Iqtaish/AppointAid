@@ -11,8 +11,8 @@ namespace AppointAid.ViewModels
 
         [Required(ErrorMessage = "Please describe your symptoms.")]
         [StringLength(1000, ErrorMessage = "Symptoms description is too long.")]
-        public string Symptoms { get; set; }
+        public string Symptoms { get; set; } = string.Empty; // Default value
 
-        public IEnumerable<SelectListItem> MedicalCenters { get; set; }
+        public IEnumerable<SelectListItem> MedicalCenters { get; set; } = new List<SelectListItem>();
     }
 }
