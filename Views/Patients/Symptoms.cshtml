@@ -1,0 +1,25 @@
+﻿@model AppointAid.ViewModels.SymptomsViewModel
+
+@{
+    ViewData["Title"] = "Describe Symptoms";
+}
+
+<h2>Describe Symptoms</h2>
+
+<form method="post" asp-action="SubmitSymptoms">
+    <div class="form-group">
+        <label for="MedicalCenterId">Select Medical Center</label>
+        <select asp-for="MedicalCenterId" asp-items="Model.MedicalCenters" class="form-control">
+            <option value="">-- Select a Medical Center --</option>
+        </select>
+        <span asp-validation-for="MedicalCenterId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="Symptoms">Describe Your Symptoms</label>
+        <textarea asp-for="Symptoms" class="form-control" rows="4" placeholder="Describe your symptoms..."></textarea>
+        <span asp-validation-for="Symptoms" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>

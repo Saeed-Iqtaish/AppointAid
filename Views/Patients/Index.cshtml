@@ -1,65 +1,150 @@
-﻿@model IEnumerable<AppointAid.Models.Patient>
-
-@{
-    ViewData["Title"] = "Index";
+﻿@{
+    ViewData["Title"] = "Patient Dashboard";
+    var approvedAppointments = ViewBag.ApprovedAppointments as List<AppointAid.Models.Appointment>;
+    var approvedTests = ViewBag.ApprovedTests as List<AppointAid.Models.MedicalTest>;
+    var upcomingAppointments = ViewBag.UpcomingAppointments as List<AppointAid.Models.Appointment> ?? new List<AppointAid.Models.Appointment>();
+    var upcomingTests = ViewBag.UpcomingTests as List<AppointAid.Models.MedicalTest> ?? new List<AppointAid.Models.MedicalTest>();
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LastName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NationalNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateOfBirth)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PhoneNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PasswordHash)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FirstName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NationalNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateOfBirth)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PhoneNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PasswordHash)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.PatientId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.PatientId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.PatientId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <!-- Approved Requests -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h4>Approved Requests</h4>
+        </div>
+        <div class="card-body">
+            <ul>
+                @if (approvedAppointments != null && approvedAppointments.Any())
+                {
+                    @foreach (var appointment in approvedAppointments)
+                    {
+                        <li>
+                            <strong>Appointment with:</strong> Dr. @appointment.Doctor?.FullName ?? "Unknown"
+                            <button class="btn btn-primary btn-sm">Make Appointment</button>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li>No approved appointments available.</li>
+                }
+
+                @if (approvedTests != null && approvedTests.Any())
+                {
+                    @foreach (var test in approvedTests)
+                    {
+                        <li>
+                            <strong>Test Approved:</strong> @test.TestName
+                            <button class="btn btn-primary btn-sm">Make Appointment</button>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li>No approved tests available.</li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <!-- Upcoming Appointments/Tests -->
+    <div id="dynamic-card" class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <button id="prev-card" class="btn btn-outline-primary btn-sm">&#8592;</button>
+            <h4 id="dynamic-title" class="text-center flex-grow-1 m-0">Upcoming Appointments</h4>
+            <button id="next-card" class="btn btn-outline-primary btn-sm">&#8594;</button>
+        </div>
+        <div id="dynamic-content" class="card-body">
+            <ul id="dynamic-list">
+                @if (upcomingAppointments != null && upcomingAppointments.Any())
+                {
+                    @foreach (var appointment in upcomingAppointments)
+                    {
+                        <li>
+                            <strong>Doctor:</strong> Dr. @appointment.Doctor?.FullName ?? "Unknown" <br />
+                            <strong>Date:</strong> @appointment.TimeSlot?.StartTime.ToString("g") ?? "Not Scheduled"
+                            <button class="btn btn-warning btn-sm">Reschedule</button>
+                            <button class="btn btn-danger btn-sm">Cancel</button>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li>No upcoming appointments available.</li>
+                }
+            </ul>
+        </div>
+        <div class="card-footer">
+            <a id="dynamic-button" class="btn btn-primary" asp-controller="Patients" asp-action="Symptoms">
+                Set New Appointment
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Select the button and card title
+    const dynamicButton = document.getElementById("dynamic-button");
+    const title = document.getElementById("dynamic-title");
+
+    // Add event listeners for navigation buttons
+            document.querySelectorAll("#prev-card, #next-card").forEach((button) => {
+        button.addEventListener("click", function () {
+            const title = document.getElementById("dynamic-title");
+            const content = document.getElementById("dynamic-content");
+            const dynamicButton = document.getElementById("dynamic-button");
+
+            // Toggle logic for circular navigation
+            if (title.textContent === "Upcoming Appointments") {
+                // Switch to "Upcoming Tests"
+                title.textContent = "Upcoming Tests";
+                content.innerHTML = `
+    @if (upcomingTests != null && upcomingTests.Any())
+    {
+        @foreach (var test in upcomingTests)
+        {
+                                        <li>
+                                            <strong>Test:</strong> @test.TestName <br />
+                                            <strong>Date:</strong> @test.Time.ToString("g")
+                                            <button class="btn btn-warning btn-sm">Reschedule</button>
+                                            <button class="btn btn-danger btn-sm">Cancel</button>
+                                        </li>
+        }
+    }
+    else
+    {
+                            <li>No upcoming tests available.</li>
+    }
+                `;
+                dynamicButton.textContent = "Request New Test";
+                dynamicButton.setAttribute("asp-controller", "MedicalTests");
+                dynamicButton.setAttribute("asp-action", "Create");
+            } else {
+                // Switch back to "Upcoming Appointments"
+                title.textContent = "Upcoming Appointments";
+                content.innerHTML = `
+    @if (upcomingAppointments != null && upcomingAppointments.Any())
+    {
+        @foreach (var appointment in upcomingAppointments)
+        {
+                                        <li>
+                                            <strong>Doctor:</strong> Dr. @appointment.Doctor?.FullName ?? "Unknown" <br />
+                                            <strong>Date:</strong> @appointment.TimeSlot?.StartTime.ToString("g") ?? "Not Scheduled"
+                                            <button class="btn btn-warning btn-sm">Reschedule</button>
+                                            <button class="btn btn-danger btn-sm">Cancel</button>
+                                        </li>
+        }
+    }
+    else
+    {
+                            <li>No upcoming appointments available.</li>
+    }
+                `;
+                dynamicButton.textContent = "Set New Appointment";
+                dynamicButton.setAttribute("asp-controller", "Patients");
+                dynamicButton.setAttribute("asp-action", "Symptoms");
+            }
+        });
+    });
+</script>

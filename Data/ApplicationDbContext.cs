@@ -33,6 +33,12 @@ namespace AppointAid.Data
                 .WithMany(c => c.Sectors)
                 .HasForeignKey(s => s.MedicalCenterId)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Medical Center - Nurses (1 -> Many)
+            modelBuilder.Entity<Nurse>()
+                .HasOne(n => n.MedicalCenter)
+                .WithMany(mc => mc.Nurses)
+                .HasForeignKey(n => n.MedicalCenterId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Patient - Appointments (1 -> Many)
             modelBuilder.Entity<Appointment>()

@@ -65,11 +65,22 @@ namespace AppointAid.Controllers
                     HttpContext.Session.SetString("UserRole", model.Role);
                     HttpContext.Session.SetString("UserId", model.NationalNumber);
 
-                    return RedirectToAction("Index", "Home");
+                    return model.Role switch
+                    {
+                        "Doctor" => RedirectToAction("Index", "Doctor"),
+                        "Nurse" => RedirectToAction("Index", "Nurse"),
+                        "Patient" => RedirectToAction("Index", "Patients"),
+                        _ => RedirectToAction("Index", "Home")
+                    };
                 }
+
+                ModelState.AddModelError("", "Invalid password. Please try again.");
+            }
+            else
+            {
+                ModelState.AddModelError("", "Invalid national number or password.");
             }
 
-            ModelState.AddModelError("", "Invalid national number or password.");
             return View(model);
         }
 
@@ -81,7 +92,6 @@ namespace AppointAid.Controllers
             TempData["Message"] = "You have been logged out.";
             return RedirectToAction("Login");
         }
-
 
         [HttpGet]
         public IActionResult Register()

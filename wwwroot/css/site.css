@@ -1,22 +1,218 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-  margin-bottom: 60px;
+    background-color: #e8f4fb; /* Light blue background */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+.nav-link {
+    color: white !important;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: capitalize;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    text-decoration: none !important; /* Prevent underline */
+    border: none !important; /* Remove any borders */
+    transition: all 0.3s ease;
+}
+
+    .nav-link i {
+        font-size: 1.2rem; /* Icon size */
+        margin-right: 5px;
+    }
+
+    .nav-link:hover {
+        color: #d8e8fc !important;
+    }
+
+    .nav-link.active {
+        font-weight: bold;
+        background-color: white;
+        color: #258cfb !important;
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+
+        .nav-link.active i {
+            color: #258cfb !important;
+        }
+
+.navbar-toggler {
+    border: none;
+}
+
+.navbar-toggler-icon {
+    background-color: white;
+    border-radius: 50%;
+}
+
+/* Fix for Any Underlying Gap */
+.navbar-nav > .nav-item > .nav-link {
+    padding-bottom: 0; /* Remove padding that might push text */
+    margin-bottom: 0; /* Remove any extra margin */
+    box-shadow: none; /* Remove any shadow effects */
+}
+
+/* Card Styling */
+.card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: white;
+    border-bottom: 2px solid #0d6efd;
+    font-size: 18px;
+    font-weight: bold;
+    color: #258cfb;
+    padding: 10px 15px;
+}
+
+    .card-header h4 {
+        margin: 0;
+        flex-grow: 1;
+        text-align: center;
+    }
+
+
+.card-body {
+    color: #343a40;
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+    text-align: center;
+}
+
+/* Button Styling */
+button, .btn {
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-outline-primary {
+    border: 2px solid #258cfb;
+    color: #258cfb;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #258cfb;
+        color: white;
+    }
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+    .btn-danger:hover {
+        background-color: #b21f2d;
+    }
+
+.btn-outline-primary {
+    border: 2px solid #258cfb;
+    color: #258cfb;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #258cfb;
+        color: white;
+    }
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: white;
+    }
+
+
+/* List Styling */
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    margin: 10px 0;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+    li:last-child {
+        border-bottom: none;
+    }
+
+    li strong {
+        color: #343a40;
+        font-weight: bold;
+    }
+
+/* Footer */
+footer {
+    text-align: center;
+    background-color: #258cfb;
+    color: white;
+    padding: 15px 0;
+    font-size: 14px;
+}
+
+    footer a {
+        color: white;
+        text-decoration: underline;
+    }
+
+        footer a:hover {
+            text-decoration: none;
+        }
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-white {
+    color: white !important;
+}
+
+.bg-primary {
+    background-color: #258cfb !important;
 }

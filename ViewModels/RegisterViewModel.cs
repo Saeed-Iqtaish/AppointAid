@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 
 namespace AppointAid.ViewModels
 {
@@ -47,5 +47,18 @@ namespace AppointAid.ViewModels
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         [Display(Name = "Confirm Password")]
         public string ConfirmPassword { get; set; }
+
+        // Custom Password Validation
+        public bool IsPasswordStrong()
+        {
+            var hasUpperCase = new Regex(@"[A-Z]+");
+            var hasLowerCase = new Regex(@"[a-z]+");
+            var hasDigits = new Regex(@"[\d]+");
+
+            return hasUpperCase.IsMatch(Password)
+                && hasLowerCase.IsMatch(Password)
+                && hasDigits.IsMatch(Password)
+                && Password.Length >= 8;
+        }
     }
 }

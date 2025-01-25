@@ -22,7 +22,7 @@ namespace AppointAid.Controllers
         // GET: Patients
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Patients.ToListAsync());
+            return View();
         }
 
         // GET: Patients/Details/5

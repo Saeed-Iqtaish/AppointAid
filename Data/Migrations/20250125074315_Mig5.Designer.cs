@@ -4,6 +4,7 @@ using AppointAid.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppointAid.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250125074315_Mig5")]
+    partial class Mig5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -221,9 +224,6 @@ namespace AppointAid.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MedicalCenterId")
-                        .HasColumnType("int");
-
                     b.Property<string>("NationalNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -233,8 +233,6 @@ namespace AppointAid.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("NurseId");
-
-                    b.HasIndex("MedicalCenterId");
 
                     b.ToTable("Nurses");
                 });
@@ -667,17 +665,6 @@ namespace AppointAid.Data.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("AppointAid.Models.Nurse", b =>
-                {
-                    b.HasOne("AppointAid.Models.MedicalCenter", "MedicalCenter")
-                        .WithMany("Nurses")
-                        .HasForeignKey("MedicalCenterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MedicalCenter");
-                });
-
             modelBuilder.Entity("AppointAid.Models.PatientReport", b =>
                 {
                     b.HasOne("AppointAid.Models.Nurse", "Nurse")
@@ -776,8 +763,6 @@ namespace AppointAid.Data.Migrations
 
             modelBuilder.Entity("AppointAid.Models.MedicalCenter", b =>
                 {
-                    b.Navigation("Nurses");
-
                     b.Navigation("Sectors");
                 });
 

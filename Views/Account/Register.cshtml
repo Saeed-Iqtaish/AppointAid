@@ -1,55 +1,76 @@
 ﻿@model AppointAid.ViewModels.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Register as Patient";
+    ViewData["Title"] = "Register";
 }
 
 <div class="container mt-4">
-    <h2 class="text-center">Register as Patient</h2>
+    <h2 class="text-center">Register</h2>
 
     <form method="post" asp-action="Register" class="mt-4">
+        @if (!string.IsNullOrEmpty(ViewData["Message"] as string))
+        {
+            <div class="alert alert-success text-center">
+                @ViewData["Message"]
+            </div>
+        }
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
         <div class="form-group">
-            <label for="FirstName">First Name</label>
-            <input type="text" id="FirstName" name="FirstName" class="form-control" placeholder="Enter your first name" required />
+            <label asp-for="FirstName"></label>
+            <input asp-for="FirstName" class="form-control" placeholder="Enter your first name" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label for="LastName">Last Name</label>
-            <input type="text" id="LastName" name="LastName" class="form-control" placeholder="Enter your last name" required />
+            <label asp-for="LastName"></label>
+            <input asp-for="LastName" class="form-control" placeholder="Enter your last name" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label for="Email">Email</label>
-            <input type="email" id="Email" name="Email" class="form-control" placeholder="Enter your email" required />
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label for="NationalNumber">National Number</label>
-            <input type="text" id="NationalNumber" name="NationalNumber" class="form-control" placeholder="Enter your national number" required />
+            <label asp-for="NationalNumber"></label>
+            <input asp-for="NationalNumber" class="form-control" placeholder="Enter your national number" />
+            <span asp-validation-for="NationalNumber" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label for="PhoneNumber">Phone Number</label>
-            <input type="text" id="PhoneNumber" name="PhoneNumber" class="form-control" placeholder="Enter your phone number" required />
+            <label asp-for="PhoneNumber"></label>
+            <input asp-for="PhoneNumber" class="form-control" placeholder="Enter your phone number" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label for="DateOfBirth">Date of Birth</label>
-            <input type="date" id="DateOfBirth" name="DateOfBirth" class="form-control" required />
+            <label asp-for="DateOfBirth"></label>
+            <input asp-for="DateOfBirth" class="form-control" type="date" />
+            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label for="Password">Password</label>
-            <input type="password" id="Password" name="Password" class="form-control" placeholder="Enter your password" required />
+            <label asp-for="Password"></label>
+            <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <label for="ConfirmPassword">Confirm Password</label>
-            <input type="password" id="ConfirmPassword" name="ConfirmPassword" class="form-control" placeholder="Re-enter your password" required />
+            <label asp-for="ConfirmPassword"></label>
+            <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm your password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
 
         <div class="text-center mt-4">
-            <input type="submit" value="Register" class="btn btn-primary" />
+            <button type="submit" class="btn btn-primary">Register</button>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
