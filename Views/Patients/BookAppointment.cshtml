@@ -1,0 +1,36 @@
+﻿@model AppointAid.ViewModels.BookAppointmentViewModel
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+            <h3 class="m-0">Sector: @Model.SectorName</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="BookAppointment" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ReportId" value="@Model.ReportId" />
+                <input type="hidden" name="PatientId" value="@Model.PatientId" />
+
+                <div class="mb-3">
+                    <label for="doctor" class="form-label">Choose Doctor</label>
+                    <select name="DoctorId" id="doctor" class="form-select" asp-items="Model.Doctors" required>
+                        <option value="">Select</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="preferredDate" class="form-label">Select Preferred Date</label>
+                    <input type="date" name="PreferredDate" id="preferredDate" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label for="preferredTime" class="form-label">Select Preferred Time</label>
+                    <input type="time" name="PreferredTime" id="preferredTime" class="form-control" required />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-calendar-plus"></i> Book
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

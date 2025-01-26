@@ -1,0 +1,73 @@
+﻿@model AppointAid.Models.EmergencyResponse
+
+@{
+    ViewData["Title"] = "Emergency Assistance";
+}
+
+<div class="container mt-5">
+    @if (Model == null)
+    {
+        <!-- Emergency Request Form -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="m-0 text-center">Request Emergency Assistance</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Emergency" method="post">
+                    <div class="mb-3">
+                        <label for="emergencyType" class="form-label">Emergency Type</label>
+                        <select name="emergencyType" id="emergencyType" class="form-select" required>
+                            <option value="Accident">Accident</option>
+                            <option value="Injury">Injury</option>
+                            <option value="Sudden Illness">Sudden Illness</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" name="location" id="location" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Submit Request</button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Emergency Details -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="m-0 text-center">Emergency Details</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Emergency Type:</strong> @Model.EmergencyType</p>
+                <p><strong>Location:</strong> @Model.Location</p>
+                <p><strong>Time:</strong> @Model.Time.ToString("g")</p>
+
+                @if (Model.IsCritical.HasValue)
+                {
+                    if (Model.IsCritical.Value)
+                    {
+                        <p><strong>Status:</strong> Team Dispatched</p>
+                        <p><strong>Estimated Time for Arrival:</strong> @Model.ResponseTime?.ToString("mm") Minutes</p>
+                    }
+                    else
+                    {
+                        <p><strong>Status:</strong> Non-Critical</p>
+                        <p><strong>Instructions:</strong></p>
+                        <textarea class="form-control" readonly>@Model.NurseInstructions</textarea>
+                    }
+                }
+                else
+                {
+                    <p><strong>Status:</strong> Pending Review</p>
+                    <p>Please wait while a nurse reviews your request.</p>
+                }
+            </div>
+        </div>
+    }
+</div>

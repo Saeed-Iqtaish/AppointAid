@@ -1,53 +1,55 @@
-﻿@model IEnumerable<AppointAid.Models.Nurse>
+﻿@model List<AppointAid.Models.PatientReport>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Patient Reports";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LastName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NationalNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PasswordHash)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FirstName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NationalNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PasswordHash)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.NurseId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.NurseId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.NurseId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>Patient Reports</h3>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <table class="table table-bordered">
+                    <thead class="bg-light">
+                        <tr class="text-center">
+                            <th>Patient Name</th>
+                            <th>Medical History</th>
+                            <th>Review Condition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var report in Model)
+                        {
+                            <tr class="text-center align-middle">
+                                <td>
+                                    <strong>@report.Patient?.FullName</strong>
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("PatientHistory", "Nurses", new { id = report.PatientId })"
+                                       class="btn btn-primary d-flex align-items-center justify-content-center"
+                                       style="gap: 0.5rem;">
+                                        <i class="bi bi-journal-medical"></i> Medical History
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("Review", "Nurses", new { id = report.PatientReportId })"
+                                       class="btn btn-primary d-flex align-items-center justify-content-center"
+                                       style="gap: 0.5rem;">
+                                        <i class="bi bi-pencil-square"></i> Review Condition
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted text-center">No reports pending review.</p>
+            }
+        </div>
+    </div>
+</div>

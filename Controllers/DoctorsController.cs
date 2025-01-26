@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AppointAid.Data;
 using AppointAid.Models;
+using AppointAid.ViewModels;
+using AppointAid.Services;
 
 namespace AppointAid.Controllers
 {
@@ -159,6 +161,51 @@ namespace AppointAid.Controllers
         private bool DoctorExists(int id)
         {
             return _context.Doctors.Any(e => e.DoctorId == id);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PatientHistory(int id)
+        {
+            var patient = await GetPatientAsync(id);
+            if (patient == null)
+            {
+                TempData["ErrorMessage"] = "Patient not found.";
+                return RedirectToAction("Index");
+            }
+
+            var appointments = await GetAppointmentsAsync(id);
+            var medicalTests = await GetMedicalTestsAsync(id);
+
+            var model = new PatientHistoryViewModel
+            {
+                Patient = patient,
+                Appointments = appointments,
+                MedicalTests = medicalTests
+            };
+
+            return View(model);
+        }
+
+        private async Task<Patient> GetPatientAsync(int patientId)
+        {
+            return await _context.Patients
+                .FirstOrDefaultAsync(p => p.PatientId == patientId);
+        }
+
+        private async Task<List<Appointment>> GetAppointmentsAsync(int patientId)
+        {
+            return await _context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.TimeSlot)
+                .Where(a => a.PatientId == patientId)
+                .ToListAsync();
+        }
+
+        private async Task<List<MedicalTest>> GetMedicalTestsAsync(int patientId)
+        {
+            return await _context.MedicalTests
+                .Where(mt => mt.PatientId == patientId)
+                .ToListAsync();
         }
     }
 }

@@ -22,11 +22,12 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 
 // Add session services
-builder.Services.AddDistributedMemoryCache(); // Required for session
-builder.Services.AddSession(options => {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Set timeout
-    options.Cookie.HttpOnly = true; // Security settings
-    options.Cookie.IsEssential = true; // Required for GDPR compliance
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
 var app = builder.Build();
@@ -44,7 +45,6 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        // Log errors or handle them as needed
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while seeding the database.");
     }

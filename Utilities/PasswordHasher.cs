@@ -6,14 +6,24 @@ namespace AppointAid.Utilities
 {
     public static class PasswordHasher
     {
-        // Hash a password
-        public static string HashPassword(string password)
+        // Hash a password with optional salt
+        public static string HashPassword(string password, string predefinedSalt = null)
         {
-            // Generate a 128-bit salt using a secure PRNG
-            byte[] salt = new byte[128 / 8];
-            using (var rng = RandomNumberGenerator.Create())
+            byte[] salt;
+
+            if (predefinedSalt != null)
             {
-                rng.GetBytes(salt);
+                // Use the predefined salt if provided
+                salt = Convert.FromBase64String(predefinedSalt);
+            }
+            else
+            {
+                // Generate a new random salt
+                salt = new byte[128 / 8];
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(salt);
+                }
             }
 
             // Derive a 256-bit subkey (HMACSHA256) using PBKDF2

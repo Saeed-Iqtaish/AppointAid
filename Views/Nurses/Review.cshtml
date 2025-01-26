@@ -1,0 +1,47 @@
+﻿@model AppointAid.Models.PatientReport
+@{
+    ViewData["Title"] = "Review Report";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>@Model.Patient?.FullName</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Review" method="post">
+                <input type="hidden" name="id" value="@Model.PatientReportId" />
+
+                <div class="mb-3">
+                    <label class="form-label">Patient Symptoms/Condition</label>
+                    <textarea class="form-control" readonly>@Model.PatientSymptoms</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Give Severity Score</label>
+                    <select class="form-select" name="severity" required>
+                        <option value="" selected disabled>Select</option>
+                        @for (int i = 1; i <= 10; i++)
+                        {
+                            <option value="@i">@i</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Select Sector</label>
+                    <select class="form-select" name="sectorId" asp-items="ViewBag.Sectors" required>
+                        <option value="" selected disabled>Select</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Comments</label>
+                    <textarea class="form-control" name="comments"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -4,49 +4,37 @@
     var approvedTests = ViewBag.ApprovedTests as List<AppointAid.Models.MedicalTest>;
     var upcomingAppointments = ViewBag.UpcomingAppointments as List<AppointAid.Models.Appointment> ?? new List<AppointAid.Models.Appointment>();
     var upcomingTests = ViewBag.UpcomingTests as List<AppointAid.Models.MedicalTest> ?? new List<AppointAid.Models.MedicalTest>();
+    var approvedReports = ViewBag.ApprovedReports as List<AppointAid.Models.PatientReport> ?? new List<AppointAid.Models.PatientReport>();
 }
 
 <div class="container mt-4">
 
     <!-- Approved Requests -->
-    <div class="card mt-4">
-        <div class="card-header bg-primary text-white">
-            <h4>Approved Requests</h4>
-        </div>
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h4>Approved Reports</h4>
+            </div>
         <div class="card-body">
             <ul>
-                @if (approvedAppointments != null && approvedAppointments.Any())
+                @foreach (var report in approvedReports)
                 {
-                    @foreach (var appointment in approvedAppointments)
-                    {
-                        <li>
-                            <strong>Appointment with:</strong> Dr. @appointment.Doctor?.FullName ?? "Unknown"
-                            <button class="btn btn-primary btn-sm">Make Appointment</button>
-                        </li>
-                    }
-                }
-                else
-                {
-                    <li>No approved appointments available.</li>
-                }
-
-                @if (approvedTests != null && approvedTests.Any())
-                {
-                    @foreach (var test in approvedTests)
-                    {
-                        <li>
-                            <strong>Test Approved:</strong> @test.TestName
-                            <button class="btn btn-primary btn-sm">Make Appointment</button>
-                        </li>
-                    }
-                }
-                else
-                {
-                    <li>No approved tests available.</li>
+                    <li>
+                        <strong>Sector:</strong> @report.Sector?.Name ?? "Unknown" <br />
+                        <strong>Diagnosis:</strong> @report.Diagnosis ?? "Pending Diagnosis" <br />
+                        @if (!report.IsAppointmentSet)
+                        {
+                            <button class="btn btn-primary btn-sm mt-2"
+                                    asp-controller="Patients"
+                                    asp-action="BookAppointment"
+                                    asp-route-reportId="@report.PatientReportId">
+                                Set Medical Appointment
+                            </button>
+                        }
+                    </li>
                 }
             </ul>
         </div>
-    </div>
+        </div>
 
     <!-- Upcoming Appointments/Tests -->
     <div id="dynamic-card" class="card mt-4">

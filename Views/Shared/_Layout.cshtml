@@ -27,9 +27,9 @@
 
                 <!-- Navbar Links -->
                 <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
-                    @* Conditional Logic: If user is logged in as a Patient *@
                     @if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Patient")
                     {
+                        <!-- Patient Navigation -->
                         <ul class="navbar-nav">
                             <li class="nav-item">
                                 <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["controller"].ToString() == "Patients" ? "active" : "")"
@@ -51,14 +51,33 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "EmergencyResponses" ? "active" : "")"
-                                   asp-controller="EmergencyResponses" asp-action="Index">
+                                   asp-controller="Patients" asp-action="Emergency">
                                     <i class="bi bi-lightning-fill me-1"></i> Emergency
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                    else if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Nurse")
+                    {
+                        <!-- Nurse Navigation -->
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["controller"].ToString() == "Nurse" ? "active" : "")"
+                                   asp-controller="Nurse" asp-action="Index">
+                                    <i class="bi bi-journal-check me-1"></i> Patient Reports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Emergency" ? "active" : "")"
+                                   asp-controller="Nurse" asp-action="Emergency">
+                                    <i class="bi bi-lightning me-1"></i> Emergency
                                 </a>
                             </li>
                         </ul>
                     }
                     else
                     {
+                        <!-- Default Navigation (Non-Logged-in Users) -->
                         <ul class="navbar-nav">
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Account" asp-action="Login">
@@ -74,7 +93,7 @@
                     }
 
                     <!-- Right-side Icons -->
-                    @if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Patient")
+                    @if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Patient" || HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Nurse")
                     {
                         <div class="d-flex align-items-center">
                             <a href="#" class="me-3 text-white">

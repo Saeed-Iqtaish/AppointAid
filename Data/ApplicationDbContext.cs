@@ -139,7 +139,6 @@ namespace AppointAid.Data
                 .WithMany(ts => ts.DoctorTimeSlots)
                 .HasForeignKey(dts => dts.TimeSlotId)
                 .OnDelete(DeleteBehavior.Cascade);
-
         }
     }
 }

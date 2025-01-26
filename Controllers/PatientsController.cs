@@ -20,9 +20,22 @@ namespace AppointAid.Controllers
             _context = context;
         }
 
-        // GET: Patients
         public async Task<IActionResult> Index()
         {
+            int? patientId = HttpContext.Session.GetInt32("PatientId");
+            if (!patientId.HasValue)
+            {
+                TempData["ErrorMessage"] = "You must be logged in to view this page.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var approvedReports = await _context.PatientReports
+                .Include(pr => pr.Sector)
+                .Where(pr => pr.PatientId == patientId && pr.SectorId != null)
+                .ToListAsync();
+
+            ViewBag.ApprovedReports = approvedReports;
+
             return View();
         }
 
@@ -176,8 +189,6 @@ namespace AppointAid.Controllers
                 return View(model);
         }
 
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitSymptoms(SymptomsViewModel model)
@@ -269,6 +280,121 @@ namespace AppointAid.Controllers
             ViewBag.PreviousAppointments = previousAppointments;
 
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BookAppointment(int reportId)
+        {
+            int? patientId = HttpContext.Session.GetInt32("PatientId");
+            if (!patientId.HasValue)
+            {
+                TempData["ErrorMessage"] = "Session has expired. Please log in again.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var report = await _context.PatientReports
+                .Include(pr => pr.Sector)
+                .FirstOrDefaultAsync(pr => pr.PatientReportId == reportId);
+
+            if (report == null)
+            {
+                TempData["ErrorMessage"] = "Patient report not found.";
+                return RedirectToAction("Index");
+            }
+
+            if (!report.SectorId.HasValue)
+            {
+                TempData["ErrorMessage"] = "The sector associated with this report is invalid.";
+                return RedirectToAction("Index");
+            }
+
+            var doctors = await _context.Doctors
+                .Where(d => d.SectorId == report.SectorId.Value)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.DoctorId.ToString(),
+                    Text = d.FullName
+                })
+                .ToListAsync();
+
+            var model = new BookAppointmentViewModel
+            {
+                ReportId = reportId,
+                SectorId = report.SectorId.Value,
+                Sector = report.Sector,
+                SectorName = report.Sector?.Name ?? "Unknown",
+                Doctors = doctors,
+                PatientId = patientId.Value
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BookAppointment(BookAppointmentViewModel model)
+        {
+            int? patientId = HttpContext.Session.GetInt32("PatientId");
+            if (!patientId.HasValue)
+            {
+                TempData["ErrorMessage"] = "Session has expired. Please log in again.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            model.PatientId = patientId.Value;
+
+            // Validate the model
+            if (!ModelState.IsValid)
+            {
+                model.Doctors = await _context.Doctors
+                    .Where(d => d.SectorId == model.SectorId)
+                    .Select(d => new SelectListItem
+                    {
+                        Value = d.DoctorId.ToString(),
+                        Text = d.FullName
+                    })
+                    .ToListAsync();
+
+                return View(model);
+            }
+
+            var timeSlot = await _context.TimeSlots
+                .FirstOrDefaultAsync(ts => ts.DoctorTimeSlots.Any(dts => dts.DoctorId == model.DoctorId) &&
+                                           ts.Date == model.PreferredDate &&
+                                           ts.StartTime == model.PreferredTime &&
+                                           ts.Availability);
+
+            if (timeSlot == null)
+            {
+                ModelState.AddModelError("", "Selected time slot is unavailable. Please select another time.");
+                return View(model);
+            }
+
+            var appointment = new Appointment
+            {
+                PatientId = model.PatientId,
+                DoctorId = model.DoctorId,
+                PatientReportId = model.ReportId,
+                TimeSlotId = timeSlot.TimeSlotId,
+                Status = "Pending"
+            };
+
+            timeSlot.Availability = false;
+
+            _context.Appointments.Add(appointment);
+
+            // Update the report to indicate the appointment has been set
+            var report = await _context.PatientReports.FindAsync(model.ReportId);
+            if (report != null)
+            {
+                report.IsAppointmentSet = true;
+                _context.PatientReports.Update(report);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Your appointment has been successfully booked!";
+            return RedirectToAction("MedicalAppointments");
         }
 
         [HttpGet]
@@ -380,6 +506,65 @@ namespace AppointAid.Controllers
             ViewBag.PreviousTests = previousTests;
 
             return View();
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Emergency(int? id)
+        {
+            if (id.HasValue)
+            {
+                // Fetch the emergency details if the ID is provided
+                var emergency = await _context.EmergencyResponses
+                    .Include(er => er.Nurse)
+                    .Include(er => er.Patient)
+                    .FirstOrDefaultAsync(er => er.EmergencyResponseId == id);
+
+                if (emergency == null)
+                {
+                    TempData["ErrorMessage"] = "Emergency record not found.";
+                    return RedirectToAction("Index");
+                }
+
+                return View(emergency);
+            }
+
+            // If no ID is provided, render the request form
+            return View(null);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Emergency(string emergencyType, string description, string location)
+        {
+            int? patientId = HttpContext.Session.GetInt32("PatientId");
+            if (!patientId.HasValue)
+            {
+                TempData["ErrorMessage"] = "You must be logged in to request emergency assistance.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Randomly assign a nurse for the prototype
+            var nurses = await _context.Nurses.ToListAsync();
+            var random = new Random();
+            var assignedNurse = nurses[random.Next(nurses.Count)];
+
+            // Create a new emergency response
+            var emergencyResponse = new EmergencyResponse
+            {
+                PatientId = patientId.Value,
+                NurseId = assignedNurse.NurseId,
+                EmergencyType = emergencyType,
+                Location = location,
+                Time = DateTime.Now,
+                Status = "Pending Review"
+            };
+
+            _context.EmergencyResponses.Add(emergencyResponse);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Your emergency request has been submitted and is pending review.";
+            return RedirectToAction("Emergency", new { id = emergencyResponse.EmergencyResponseId });
         }
 
     }

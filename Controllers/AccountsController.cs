@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using AppointAid.Data;
 using AppointAid.ViewModels;
 using AppointAid.Models;
-using AppointAid.Utilities;
 using AppointAid.Services;
 
 namespace AppointAid.Controllers
@@ -13,6 +12,7 @@ namespace AppointAid.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly PatientService _patientService;
+
         public AccountController(ApplicationDbContext context, PatientService patientService)
         {
             _patientService = patientService;
@@ -36,6 +36,7 @@ namespace AppointAid.Controllers
 
             object user = null;
 
+            // Identify the user based on the role and national number
             switch (model.Role)
             {
                 case "Doctor":
@@ -51,7 +52,7 @@ namespace AppointAid.Controllers
 
             if (user != null)
             {
-                string storedPasswordHash = user switch
+                string storedPassword = user switch
                 {
                     Doctor d => d.PasswordHash,
                     Nurse n => n.PasswordHash,
@@ -59,24 +60,36 @@ namespace AppointAid.Controllers
                     _ => null
                 };
 
-                if (PasswordHasher.VerifyPassword(storedPasswordHash, model.Password))
+                // Validate the password
+                if (storedPassword == model.Password)
                 {
                     TempData["Message"] = $"Welcome back, {model.Role}!";
 
-                    // Set common session values
+                    // Set session variables
                     HttpContext.Session.SetString("UserRole", model.Role);
                     HttpContext.Session.SetString("UserId", model.NationalNumber);
 
-                    // Set PatientId in the session if the role is Patient
-                    if (model.Role == "Patient" && user is Patient patient)
+                    // Set specific IDs in the session based on the role
+                    switch (model.Role)
                     {
-                        HttpContext.Session.SetInt32("PatientId", patient.PatientId);
+                        case "Patient" when user is Patient patient:
+                            HttpContext.Session.SetInt32("PatientId", patient.PatientId);
+                            break;
+
+                        case "Doctor" when user is Doctor doctor:
+                            HttpContext.Session.SetInt32("DoctorId", doctor.DoctorId);
+                            break;
+
+                        case "Nurse" when user is Nurse nurse:
+                            HttpContext.Session.SetInt32("NurseId", nurse.NurseId);
+                            break;
                     }
 
+                    // Redirect based on the role
                     return model.Role switch
                     {
-                        "Doctor" => RedirectToAction("Index", "Doctor"),
-                        "Nurse" => RedirectToAction("Index", "Nurse"),
+                        "Doctor" => RedirectToAction("Index", "Doctors"),
+                        "Nurse" => RedirectToAction("Index", "Nurses"),
                         "Patient" => RedirectToAction("Index", "Patients"),
                         _ => RedirectToAction("Index", "Home")
                     };
@@ -124,9 +137,6 @@ namespace AppointAid.Controllers
                 return View(model);
             }
 
-            // Hash the password
-            string hashedPassword = PasswordHasher.HashPassword(model.Password);
-
             // Map RegisterViewModel to Patient entity
             var patient = new Patient
             {
@@ -135,7 +145,7 @@ namespace AppointAid.Controllers
                 NationalNumber = model.NationalNumber,
                 DateOfBirth = model.DateOfBirth,
                 PhoneNumber = model.PhoneNumber,
-                PasswordHash = hashedPassword
+                PasswordHash = model.Password // Store the plain-text password
             };
 
             // Add patient to the database

@@ -1,0 +1,79 @@
+﻿@model AppointAid.ViewModels.PatientHistoryViewModel
+
+@{
+    ViewData["Title"] = "Patient History";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>Patient History for @Model.Patient.FullName</h3>
+        </div>
+        <div class="card-body">
+            <h4>Patient Information</h4>
+            <p><strong>National Number:</strong> @Model.Patient.NationalNumber</p>
+            <p><strong>Date of Birth:</strong> @Model.Patient.DateOfBirth.ToShortDateString()</p>
+            <p><strong>Phone Number:</strong> @Model.Patient.PhoneNumber</p>
+
+            <hr />
+            <h4>Appointments</h4>
+            @if (Model.Appointments.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Sector</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var appointment in Model.Appointments)
+                        {
+                            <tr>
+                                <td>Dr. @appointment.Doctor.FullName</td>
+                                <td>@appointment.Doctor?.Sector?.Name ?? "N/A"</td>
+                                <td>@appointment.TimeSlot?.StartTime.ToString("f") ?? "N/A"</td>
+                                <td>@appointment.Status</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No previous appointments available.</p>
+            }
+
+            <hr />
+            <h4>Medical Tests</h4>
+            @if (Model.MedicalTests.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Test Name</th>
+                            <th>Date Conducted</th>
+                            <th>Results</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var test in Model.MedicalTests)
+                        {
+                            <tr>
+                                <td>@test.TestName</td>
+                                <td>@test.Time?.ToString("f") ?? "N/A"</td>
+                                <td>@test.Results ?? "Pending"</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No previous medical tests available.</p>
+            }
+        </div>
+    </div>
+</div>

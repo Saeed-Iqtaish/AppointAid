@@ -10,6 +10,7 @@
         public int? Severity { get; set; }
         public string? Diagnosis { get; set; }
         public string? Treatment { get; set; }
+        public bool IsAppointmentSet { get; set; } = false;
 
         // Navigation Properties
         public  Patient? Patient { get; set; }
