@@ -1,0 +1,49 @@
+﻿@model List<AppointAid.Models.MedicalTest>
+
+@{
+    ViewData["Title"] = "Requested Tests";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>Requested Tests</h3>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Test</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var test in Model)
+                        {
+                            <tr>
+                                <td>@test.Patient?.FullName</td>
+                                <td>@test.TestName</td>
+                                <td>
+                                    <a asp-controller="Doctors" asp-action="ReviewTest" asp-route-id="@test.MedicalTestId"
+                                       class="btn btn-primary">
+                                        Review Request
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="text-center mt-3">
+                    <button class="btn btn-outline-primary">More</button>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted text-center">No requested tests available.</p>
+            }
+        </div>
+    </div>
+</div>

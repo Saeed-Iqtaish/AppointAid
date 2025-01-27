@@ -23,12 +23,11 @@
                         <strong>Diagnosis:</strong> @report.Diagnosis ?? "Pending Diagnosis" <br />
                         @if (!report.IsAppointmentSet)
                         {
-                            <button class="btn btn-primary btn-sm mt-2"
-                                    asp-controller="Patients"
-                                    asp-action="BookAppointment"
-                                    asp-route-reportId="@report.PatientReportId">
-                                Set Medical Appointment
-                            </button>
+                            <a href="@Url.Action("BookAppointment", "Patients", new { reportId = report.PatientReportId })"
+                               class="btn btn-primary d-flex align-items-center justify-content-center"
+                               style="gap: 0.5rem;">
+                                <i class="bi bi-calendar-check"></i> Set Medical Appointment
+                            </a>
                         }
                     </li>
                 }
@@ -72,7 +71,7 @@
             </ul>
         </div>
         <div class="card-footer">
-            <a id="dynamic-button" class="btn btn-primary" asp-controller="Patients" asp-action="Symptoms">
+            <a id="dynamic-button" class="btn btn-primary" href="@Url.Action("Symptoms", "Patients")">
                 Set New Appointment
             </a>
         </div>
@@ -80,20 +79,17 @@
 </div>
 
 <script>
-    // Select the button and card title
     const dynamicButton = document.getElementById("dynamic-button");
     const title = document.getElementById("dynamic-title");
 
     // Add event listeners for navigation buttons
-            document.querySelectorAll("#prev-card, #next-card").forEach((button) => {
+    document.querySelectorAll("#prev-card, #next-card").forEach((button) => {
         button.addEventListener("click", function () {
-            const title = document.getElementById("dynamic-title");
             const content = document.getElementById("dynamic-content");
             const dynamicButton = document.getElementById("dynamic-button");
 
-            // Toggle logic for circular navigation
             if (title.textContent === "Upcoming Appointments") {
-                // Switch to "Upcoming Tests"
+                // Switch to Upcoming Tests
                 title.textContent = "Upcoming Tests";
                 content.innerHTML = `
     @if (upcomingTests != null && upcomingTests.Any())
@@ -114,32 +110,30 @@
     }
                 `;
                 dynamicButton.textContent = "Request New Test";
-                dynamicButton.setAttribute("asp-controller", "MedicalTests");
-                dynamicButton.setAttribute("asp-action", "Create");
+                dynamicButton.href = "@Url.Action("RequestMedicalTest", "Patients")"; // Redirect to Request Medical Test page
             } else {
-                // Switch back to "Upcoming Appointments"
+                // Switch back to Upcoming Appointments
                 title.textContent = "Upcoming Appointments";
                 content.innerHTML = `
     @if (upcomingAppointments != null && upcomingAppointments.Any())
     {
         @foreach (var appointment in upcomingAppointments)
         {
-                                        <li>
-                                            <strong>Doctor:</strong> Dr. @appointment.Doctor?.FullName ?? "Unknown" <br />
-                                            <strong>Date:</strong> @appointment.TimeSlot?.StartTime.ToString("g") ?? "Not Scheduled"
-                                            <button class="btn btn-warning btn-sm">Reschedule</button>
-                                            <button class="btn btn-danger btn-sm">Cancel</button>
-                                        </li>
+                    <li>
+                        <strong>Doctor:</strong> Dr. @appointment.Doctor?.FullName ?? "Unknown" <br />
+                        <strong>Date:</strong> @appointment.TimeSlot?.StartTime.ToString("g") ?? "Not Scheduled"
+                        <button class="btn btn-warning btn-sm">Reschedule</button>
+                        <button class="btn btn-danger btn-sm">Cancel</button>
+                    </li>
         }
     }
     else
     {
-                            <li>No upcoming appointments available.</li>
+            <li>No upcoming appointments available.</li>
     }
                 `;
                 dynamicButton.textContent = "Set New Appointment";
-                dynamicButton.setAttribute("asp-controller", "Patients");
-                dynamicButton.setAttribute("asp-action", "Symptoms");
+                dynamicButton.href = "@Url.Action("Symptoms", "Patients")"; // Redirect to Set Appointment page
             }
         });
     });

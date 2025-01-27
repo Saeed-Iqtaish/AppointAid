@@ -296,15 +296,9 @@ namespace AppointAid.Controllers
                 .Include(pr => pr.Sector)
                 .FirstOrDefaultAsync(pr => pr.PatientReportId == reportId);
 
-            if (report == null)
+            if (report == null || !report.SectorId.HasValue)
             {
-                TempData["ErrorMessage"] = "Patient report not found.";
-                return RedirectToAction("Index");
-            }
-
-            if (!report.SectorId.HasValue)
-            {
-                TempData["ErrorMessage"] = "The sector associated with this report is invalid.";
+                TempData["ErrorMessage"] = "Invalid or missing report details.";
                 return RedirectToAction("Index");
             }
 
@@ -319,12 +313,11 @@ namespace AppointAid.Controllers
 
             var model = new BookAppointmentViewModel
             {
+                PatientId = patientId.Value,
                 ReportId = reportId,
                 SectorId = report.SectorId.Value,
-                Sector = report.Sector,
                 SectorName = report.Sector?.Name ?? "Unknown",
-                Doctors = doctors,
-                PatientId = patientId.Value
+                Doctors = doctors
             };
 
             return View(model);
@@ -334,67 +327,54 @@ namespace AppointAid.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BookAppointment(BookAppointmentViewModel model)
         {
-            int? patientId = HttpContext.Session.GetInt32("PatientId");
-            if (!patientId.HasValue)
-            {
-                TempData["ErrorMessage"] = "Session has expired. Please log in again.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            model.PatientId = patientId.Value;
-
-            // Validate the model
             if (!ModelState.IsValid)
             {
-                model.Doctors = await _context.Doctors
-                    .Where(d => d.SectorId == model.SectorId)
-                    .Select(d => new SelectListItem
-                    {
-                        Value = d.DoctorId.ToString(),
-                        Text = d.FullName
-                    })
-                    .ToListAsync();
-
-                return View(model);
+                TempData["ErrorMessage"] = "Invalid appointment details.";
+                return RedirectToAction("Index");
             }
 
             var timeSlot = await _context.TimeSlots
-                .FirstOrDefaultAsync(ts => ts.DoctorTimeSlots.Any(dts => dts.DoctorId == model.DoctorId) &&
-                                           ts.Date == model.PreferredDate &&
-                                           ts.StartTime == model.PreferredTime &&
-                                           ts.Availability);
+                .Include(ts => ts.DoctorTimeSlots)
+                .FirstOrDefaultAsync(ts => ts.Date == model.PreferredDate &&
+                                            ts.StartTime == model.PreferredTime &&
+                                            ts.DoctorTimeSlots.Any(dts => dts.DoctorId == model.SelectedDoctorId) &&
+                                            ts.Availability);
 
             if (timeSlot == null)
             {
-                ModelState.AddModelError("", "Selected time slot is unavailable. Please select another time.");
-                return View(model);
+                TempData["ErrorMessage"] = "The selected time slot is unavailable.";
+                return RedirectToAction("BookAppointment", new { reportId = model.ReportId });
             }
+
+            timeSlot.Availability = false;
 
             var appointment = new Appointment
             {
                 PatientId = model.PatientId,
-                DoctorId = model.DoctorId,
+                DoctorId = model.SelectedDoctorId,
                 PatientReportId = model.ReportId,
                 TimeSlotId = timeSlot.TimeSlotId,
-                Status = "Pending"
+                Status = "Confirmed"
             };
 
-            timeSlot.Availability = false;
-
             _context.Appointments.Add(appointment);
-
-            // Update the report to indicate the appointment has been set
-            var report = await _context.PatientReports.FindAsync(model.ReportId);
-            if (report != null)
-            {
-                report.IsAppointmentSet = true;
-                _context.PatientReports.Update(report);
-            }
-
             await _context.SaveChangesAsync();
 
             TempData["Message"] = "Your appointment has been successfully booked!";
             return RedirectToAction("MedicalAppointments");
+        }
+
+
+        [HttpGet]
+        public async Task<JsonResult> GetAvailableTimes(int doctorId, DateTime date)
+        {
+            var times = await _context.DoctorTimeSlots
+                .Include(dts => dts.TimeSlot)
+                .Where(dts => dts.DoctorId == doctorId && dts.TimeSlot.Availability && dts.TimeSlot.Date == date)
+                .Select(dts => dts.TimeSlot.StartTime)
+                .ToListAsync();
+
+            return Json(times.Select(t => new { Time = t.ToString(@"hh\:mm") }));
         }
 
         [HttpGet]
@@ -464,6 +444,7 @@ namespace AppointAid.Controllers
                 PatientId = patientId.Value,
                 DoctorId = doctor.DoctorId,
                 TestName = model.TestName,
+                Reason = model.Reason,
                 Time = DateTime.Now,
                 IsApproved = null,
                 Results = null

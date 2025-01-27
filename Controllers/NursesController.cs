@@ -32,9 +32,10 @@ namespace AppointAid.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            // Fetch reports assigned to the logged-in nurse where sector and severity are not assigned
             var reports = await _context.PatientReports
                 .Include(pr => pr.Patient)
-                .Where(pr => pr.NurseId == nurseId && pr.SectorId == null)
+                .Where(pr => pr.NurseId == nurseId && pr.SectorId == null && !pr.Severity.HasValue)
                 .ToListAsync();
 
             return View(reports);
@@ -261,6 +262,61 @@ namespace AppointAid.Controllers
             return await _context.MedicalTests
                 .Where(mt => mt.PatientId == patientId)
                 .ToListAsync();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EmergencyRequests()
+        {
+            int? nurseId = HttpContext.Session.GetInt32("NurseId");
+            if (!nurseId.HasValue)
+            {
+                TempData["ErrorMessage"] = "You must be logged in as a nurse to view this page.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            var emergencyRequests = await _context.EmergencyResponses
+                .Include(er => er.Patient)
+                .Where(er => er.NurseId == nurseId && er.Status == "Pending Review")
+                .ToListAsync();
+
+            return View(emergencyRequests);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ReviewEmergency(int id)
+        {
+            var emergency = await _context.EmergencyResponses
+                .Include(er => er.Patient)
+                .FirstOrDefaultAsync(er => er.EmergencyResponseId == id);
+
+            if (emergency == null)
+            {
+                TempData["ErrorMessage"] = "Emergency request not found.";
+                return RedirectToAction("EmergencyRequests");
+            }
+
+            return View(emergency);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReviewEmergency(int id, string comments, string status)
+        {
+            var emergency = await _context.EmergencyResponses.FindAsync(id);
+            if (emergency == null)
+            {
+                TempData["ErrorMessage"] = "Emergency request not found.";
+                return RedirectToAction("EmergencyRequests");
+            }
+
+            emergency.NurseInstructions = comments;
+            emergency.Status = status;
+
+            _context.EmergencyResponses.Update(emergency);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Emergency request has been updated successfully.";
+            return RedirectToAction("EmergencyRequests");
         }
     }
 }

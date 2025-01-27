@@ -1,65 +1,77 @@
-﻿@model IEnumerable<AppointAid.Models.Doctor>
-
-@{
-    ViewData["Title"] = "Index";
+﻿@{
+    ViewData["Title"] = "Doctor Dashboard";
+    var requestedTests = ViewBag.RequestedTests as List<AppointAid.Models.MedicalTest>;
+    var upcomingAppointments = ViewBag.UpcomingAppointments as List<AppointAid.Models.Appointment>;
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LastName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NationalNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Specialty)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PasswordHash)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Sector)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FirstName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NationalNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Specialty)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PasswordHash)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Sector.SectorId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.DoctorId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.DoctorId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.DoctorId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <!-- Requested Tests -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h4>Requested Tests</h4>
+        </div>
+        <div class="card-body">
+            @if (requestedTests != null && requestedTests.Any())
+            {
+                <ul class="list-group">
+                    @foreach (var test in requestedTests)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <strong>Patient:</strong> @test.Patient?.FullName ?? "Unknown" <br />
+                                <strong>Test:</strong> @test.TestName
+                            </span>
+                            <a href="@Url.Action("ReviewTest", "Doctors", new { id = test.MedicalTestId })" class="btn btn-primary">
+                                Review Request
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted text-center">No requested tests available.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Upcoming Appointments -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h4>Upcoming Appointments</h4>
+        </div>
+        <div class="card-body">
+            @if (upcomingAppointments != null && upcomingAppointments.Any())
+            {
+                @foreach (var appointment in upcomingAppointments)
+                {
+                    <div class="border-bottom pb-3 mb-3">
+                        <p>
+                            <strong>Patient:</strong> @appointment.Patient?.FullName ?? "Unknown" <br />
+                            <strong>Status:</strong> @appointment.Status <br />
+                            <strong>Date:</strong> @appointment.TimeSlot?.StartTime.ToString("g") ?? "Not Scheduled" <br />
+                            <strong>Medical Center:</strong> @appointment.Doctor?.Sector?.MedicalCenter?.MedicalCenterName ?? "N/A" <br />
+                            <strong>Sector:</strong> @appointment.Doctor?.Sector?.Name ?? "N/A"
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("PatientHistory", "Doctors", new { id = appointment.PatientId })" class="btn btn-primary btn-sm">
+                                Medical History
+                            </a>
+                            <a href="@Url.Action("Reschedule", "Doctors", new { id = appointment.AppointmentId })" class="btn btn-warning btn-sm">
+                                Reschedule
+                            </a>
+                            <a href="@Url.Action("Cancel", "Doctors", new { id = appointment.AppointmentId })" class="btn btn-danger btn-sm">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted text-center">No upcoming appointments available.</p>
+            }
+        </div>
+    </div>
+</div>

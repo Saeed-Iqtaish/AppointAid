@@ -1,36 +1,44 @@
 ﻿@model AppointAid.ViewModels.BookAppointmentViewModel
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
+<h2>Book Appointment</h2>
 
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header bg-primary text-white text-center">
-            <h3 class="m-0">Sector: @Model.SectorName</h3>
-        </div>
-        <div class="card-body">
-            <form asp-action="BookAppointment" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="ReportId" value="@Model.ReportId" />
-                <input type="hidden" name="PatientId" value="@Model.PatientId" />
+<form asp-action="BookAppointment" method="post">
+    <input type="hidden" asp-for="ReportId" />
+    <input type="hidden" asp-for="PatientId" />
 
-                <div class="mb-3">
-                    <label for="doctor" class="form-label">Choose Doctor</label>
-                    <select name="DoctorId" id="doctor" class="form-select" asp-items="Model.Doctors" required>
-                        <option value="">Select</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="preferredDate" class="form-label">Select Preferred Date</label>
-                    <input type="date" name="PreferredDate" id="preferredDate" class="form-control" required />
-                </div>
-                <div class="mb-3">
-                    <label for="preferredTime" class="form-label">Select Preferred Time</label>
-                    <input type="time" name="PreferredTime" id="preferredTime" class="form-control" required />
-                </div>
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-calendar-plus"></i> Book
-                </button>
-            </form>
-        </div>
+    <div class="form-group">
+        <label for="SelectedDoctorId">Choose Doctor</label>
+        <select asp-for="SelectedDoctorId" asp-items="Model.Doctors" class="form-control"></select>
     </div>
-</div>
+
+    <div class="form-group">
+        <label for="PreferredDate">Preferred Date</label>
+        <input type="date" asp-for="PreferredDate" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="PreferredTime">Preferred Time</label>
+        <select id="time-select" asp-for="PreferredTime" class="form-control">
+            <option value="">Select a time</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Book</button>
+</form>
+
+<script>
+    document.getElementById("PreferredDate").addEventListener("change", function () {
+        const doctorId = document.getElementById("SelectedDoctorId").value;
+        const date = this.value;
+
+        fetch(`/Patients/GetAvailableTimes?doctorId=${doctorId}&date=${date}`)
+            .then(response => response.json())
+            .then(times => {
+                const timeSelect = document.getElementById("time-select");
+                timeSelect.innerHTML = '<option value="">Select a time</option>';
+                times.forEach(t => {
+                    timeSelect.innerHTML += `<option value="${t.Time}">${t.Time}</option>`;
+                });
+            });
+    });
+</script>

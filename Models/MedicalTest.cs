@@ -6,6 +6,7 @@
         public int MedicalTestId { get; set; }
         public string TestName { get; set; } = string.Empty;
         public int PatientId { get; set; }
+        public required string Reason { get; set; }
         public int? DoctorId { get; set; } 
         public bool? IsApproved { get; set; }
         public DateTime? Time { get; set; }

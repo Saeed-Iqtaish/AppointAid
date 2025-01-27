@@ -21,11 +21,33 @@ namespace AppointAid.Controllers
             _context = context;
         }
 
-        // GET: Doctors1
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Doctors.Include(d => d.Sector);
-            return View(await applicationDbContext.ToListAsync());
+            int? doctorId = HttpContext.Session.GetInt32("DoctorId");
+            if (!doctorId.HasValue)
+            {
+                TempData["ErrorMessage"] = "You must be logged in as a doctor to view this page.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Fetch requested tests for the doctor
+            var requestedTests = await _context.MedicalTests
+                .Include(mt => mt.Patient)
+                .Where(mt => mt.DoctorId == doctorId && mt.IsApproved == null) // Pending approval
+                .ToListAsync();
+
+            // Fetch upcoming appointments for the doctor
+            var upcomingAppointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.TimeSlot)
+                .Include(a => a.Doctor)
+                .Where(a => a.DoctorId == doctorId && a.TimeSlot.Date > DateTime.Now)
+                .ToListAsync();
+
+            ViewBag.RequestedTests = requestedTests;
+            ViewBag.UpcomingAppointments = upcomingAppointments;
+
+            return View();
         }
 
         // GET: Doctors1/Details/5
@@ -206,6 +228,132 @@ namespace AppointAid.Controllers
             return await _context.MedicalTests
                 .Where(mt => mt.PatientId == patientId)
                 .ToListAsync();
+        }
+
+
+        // GET: RequestedTests
+        [HttpGet]
+        public async Task<IActionResult> RequestedTests()
+        {
+            var tests = await _context.MedicalTests
+                .Include(mt => mt.Patient)
+                .Where(mt => mt.IsApproved == null) // Fetch pending tests
+                .ToListAsync();
+
+            return View(tests);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> ReviewTest(int id)
+        {
+            var test = await _context.MedicalTests
+                .Include(mt => mt.Patient)
+                .FirstOrDefaultAsync(mt => mt.MedicalTestId == id);
+
+            if (test == null)
+            {
+                TempData["ErrorMessage"] = "Test request not found.";
+                return RedirectToAction("RequestedTests");
+            }
+
+            return View(test);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReviewTest(int id, bool approve)
+        {
+            var test = await _context.MedicalTests.FindAsync(id);
+            if (test == null)
+            {
+                TempData["ErrorMessage"] = "Test not found.";
+                return RedirectToAction("Index");
+            }
+
+            test.IsApproved = approve;
+
+            _context.MedicalTests.Update(test);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = approve ? "Test approved successfully." : "Test denied successfully.";
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public IActionResult SetSchedule()
+        {
+            var viewModel = new WeeklyScheduleViewModel
+            {
+                StartDate = DateTime.Now.Date,
+                EndDate = DateTime.Now.Date.AddDays(7),
+                Days = Enum.GetNames(typeof(DayOfWeek)).Select(day => new ScheduleDay
+                {
+                    Day = day,
+                    IsAvailable = false,
+                    StartTime = null,
+                    EndTime = null
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetSchedule(WeeklyScheduleViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            int? doctorId = HttpContext.Session.GetInt32("DoctorId");
+            if (!doctorId.HasValue)
+            {
+                TempData["ErrorMessage"] = "Session expired. Please log in again.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Remove existing time slots within the specified range for the doctor
+            var existingTimeSlots = await _context.DoctorTimeSlots
+                .Include(dts => dts.TimeSlot)
+                .Where(dts => dts.DoctorId == doctorId && dts.TimeSlot.Date >= model.StartDate && dts.TimeSlot.Date <= model.EndDate)
+                .ToListAsync();
+
+            _context.DoctorTimeSlots.RemoveRange(existingTimeSlots);
+            await _context.SaveChangesAsync();
+
+            // Add new schedule
+            foreach (var day in model.Days.Where(d => d.IsAvailable))
+            {
+                for (var date = model.StartDate; date <= model.EndDate; date = date.AddDays(1))
+                {
+                    if (Enum.GetName(typeof(DayOfWeek), date.DayOfWeek) == day.Day)
+                    {
+                        var timeSlot = new TimeSlot
+                        {
+                            Date = date,
+                            StartTime = day.StartTime.Value,
+                            EndTime = day.EndTime.Value,
+                            Availability = true
+                        };
+
+                        _context.TimeSlots.Add(timeSlot);
+                        await _context.SaveChangesAsync();
+
+                        _context.DoctorTimeSlots.Add(new DoctorTimeSlot
+                        {
+                            DoctorId = doctorId.Value,
+                            TimeSlotId = timeSlot.TimeSlotId
+                        });
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Message"] = "Schedule saved successfully!";
+            return RedirectToAction("Index", "Doctors");
         }
     }
 }

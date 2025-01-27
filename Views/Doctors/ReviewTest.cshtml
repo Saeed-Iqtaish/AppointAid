@@ -1,0 +1,34 @@
+﻿@model AppointAid.Models.MedicalTest
+
+@{
+    ViewData["Title"] = "Review Test";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>@Model.Patient?.FullName ?? "Patient Name"</h3>
+        </div>
+        <div class="card-body">
+            <p>
+                <strong>Test:</strong> @Model.TestName
+            </p>
+            <p>
+                <strong>Reason for Test:</strong> @Model.Reason ?? "No reason provided."
+            </p>
+
+            <form method="post" asp-action="ReviewTest" asp-controller="Doctors">
+                <input type="hidden" name="id" value="@Model.MedicalTestId" />
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="submit" name="approve" value="true" class="btn btn-primary btn-lg">
+                        Approve &#10003;
+                    </button>
+                    <button type="submit" name="approve" value="false" class="btn btn-danger btn-lg">
+                        Deny &#10007;
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

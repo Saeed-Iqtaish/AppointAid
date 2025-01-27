@@ -6,6 +6,7 @@
         public int PatientId { get; set; }
         public int? NurseId { get; set; }
         public string EmergencyType { get; set; } = string.Empty;
+        public string EmergencyDescription {  get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public DateTime Time { get; set; }
         public string Status { get; set; } = string.Empty;
