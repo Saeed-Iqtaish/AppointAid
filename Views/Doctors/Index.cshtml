@@ -22,7 +22,7 @@
                                 <strong>Patient:</strong> @test.Patient?.FullName ?? "Unknown" <br />
                                 <strong>Test:</strong> @test.TestName
                             </span>
-                            <a href="@Url.Action("ReviewTest", "Doctors", new { id = test.MedicalTestId })" class="btn btn-primary">
+                            <a href="@Url.Action("ReviewTest", "Doctors", new { id = test.MedicalTestId })" class="btn btn-outline-primary">
                                 Review Request
                             </a>
                         </li>
@@ -55,14 +55,11 @@
                             <strong>Sector:</strong> @appointment.Doctor?.Sector?.Name ?? "N/A"
                         </p>
                         <div class="d-flex justify-content-between">
-                            <a href="@Url.Action("PatientHistory", "Doctors", new { id = appointment.PatientId })" class="btn btn-primary btn-sm">
+                            <a href="@Url.Action("PatientHistory", "Doctors", new { id = appointment.PatientId })" class="btn btn-outline-primary btn-sm">
                                 Medical History
                             </a>
-                            <a href="@Url.Action("Reschedule", "Doctors", new { id = appointment.AppointmentId })" class="btn btn-warning btn-sm">
-                                Reschedule
-                            </a>
-                            <a href="@Url.Action("Cancel", "Doctors", new { id = appointment.AppointmentId })" class="btn btn-danger btn-sm">
-                                Cancel
+                            <a href="@Url.Action("ViewPatientReport", "Doctors", new { reportId = appointment.PatientReportId })" class="btn btn-info btn-sm">
+                                Patient Report
                             </a>
                         </div>
                     </div>

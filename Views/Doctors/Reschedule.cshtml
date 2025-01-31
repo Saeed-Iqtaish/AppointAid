@@ -1,0 +1,91 @@
+﻿@model AppointAid.ViewModels.RescheduleAppointmentViewModel
+
+<div class="container mx-auto my-8 p-6 bg-white rounded shadow-md">
+    <h2 class="text-xl font-bold text-center mb-6">Sector: @Model.SectorName</h2>
+
+    <form method="post" asp-action="Reschedule">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="AppointmentId" />
+        <input type="hidden" asp-for="SelectedDate" id="hidden-selected-date" />
+        <input type="hidden" asp-for="SelectedTimeSlotId" id="hidden-time-slot-id" />
+
+        <div id="step-1">
+            <label for="dateDropdown">Select Preferred Date</label>
+            <select id="dateDropdown" class="form-control">
+                <option value="">Select</option>
+            </select>
+            <button type="button" id="confirm-date-btn" class="btn btn-primary mt-4">Confirm</button>
+            <button type="button" id="go-back-date-btn" class="btn btn-secondary mt-4" style="display: none;">Go Back</button>
+        </div>
+
+        <div id="step-2" style="display: none;">
+            <label for="timeSlotDropdown">Select Preferred Time</label>
+            <select id="timeSlotDropdown" class="form-control">
+                <option value="">Select</option>
+            </select>
+            <button type="submit" class="btn btn-primary mt-4">Reschedule</button>
+            <button type="button" id="go-back-time-btn" class="btn btn-secondary mt-4">Go Back</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dateDropdown = document.getElementById("dateDropdown");
+        const confirmDateBtn = document.getElementById("confirm-date-btn");
+        const goBackDateBtn = document.getElementById("go-back-date-btn");
+        const timeSlotDropdown = document.getElementById("timeSlotDropdown");
+        const goBackTimeBtn = document.getElementById("go-back-time-btn");
+
+        const step1 = document.getElementById("step-1");
+        const step2 = document.getElementById("step-2");
+
+        const hiddenSelectedDate = document.getElementById("hidden-selected-date");
+        const hiddenTimeSlotId = document.getElementById("hidden-time-slot-id");
+
+        let selectedDate = null;
+
+        confirmDateBtn.addEventListener("click", async function () {
+            selectedDate = dateDropdown.value;
+            if (!selectedDate) {
+                alert("Please select a date.");
+                return;
+            }
+
+            hiddenSelectedDate.value = selectedDate;
+            dateDropdown.disabled = true;
+            confirmDateBtn.style.display = "none";
+            goBackDateBtn.style.display = "block";
+
+            try {
+                const response = await fetch(`/Appointments/GetAvailableTimeSlots?selectedDate=${selectedDate}`);
+                const availableSlots = await response.json();
+
+                timeSlotDropdown.innerHTML = '<option value="">Select</option>';
+                availableSlots.forEach(slot => {
+                    timeSlotDropdown.innerHTML += `<option value="${slot.timeSlotId}">${slot.startTime} - ${slot.endTime}</option>`;
+                });
+
+                step2.style.display = "block";
+            } catch (error) {
+                console.error("Error fetching time slots:", error);
+                alert("Failed to load available time slots. Please try again.");
+            }
+        });
+
+        goBackDateBtn.addEventListener("click", function () {
+            dateDropdown.disabled = false;
+            confirmDateBtn.style.display = "block";
+            goBackDateBtn.style.display = "none";
+
+            step2.style.display = "none";
+            timeSlotDropdown.innerHTML = '<option value="">Select</option>';
+        });
+
+        goBackTimeBtn.addEventListener("click", function () {
+            step2.style.display = "none";
+            timeSlotDropdown.innerHTML = '<option value="">Select</option>';
+        });
+    });
+</script>

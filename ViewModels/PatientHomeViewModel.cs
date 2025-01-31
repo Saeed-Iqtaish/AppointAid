@@ -42,7 +42,8 @@ namespace AppointAid.ViewModels
                         <p>Test: {test.TestName}</p>
                         <p>Sector: {test.Doctor.SectorId}</p>
                         <p>Location: {test.Doctor.Sector.MedicalCenter.Location}</p>
-                        <p>Date: {test.Time}</p>
+                        <p>Date: {test.ScheduledDate}</p>
+                        <p>Time: {test.ScheduledTime}</p>
                         <div>
                             <a href='#' class='btn btn-primary'>Get Location</a>
                             <a href='#' class='btn btn-warning'>Reschedule</a>

@@ -1,0 +1,23 @@
+﻿@model IEnumerable<AppointAid.Models.MedicalTest>
+
+@if (Model.Any())
+{
+    foreach (var test in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <p><strong>Test:</strong> @test.TestName</p>
+                <p><strong>Doctor:</strong> Dr. @test.Doctor?.FullName ?? "Unknown"</p>
+                <p><strong>Medical Center:</strong> @test.Doctor?.Sector?.MedicalCenter?.MedicalCenterName ?? "Unknown"</p>
+                <p><strong>Date:</strong> @(test.ScheduledDate.HasValue ? test.ScheduledDate.Value.ToString("MMMM dd, yyyy h:mm tt") : "Not Scheduled")</p>
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-primary btn-sm">Get Location</button>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>No upcoming tests available.</p>
+}

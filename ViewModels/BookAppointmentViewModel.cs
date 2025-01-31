@@ -1,19 +1,34 @@
-﻿using AppointAid.Models;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace AppointAid.ViewModels
 {
     public class BookAppointmentViewModel
     {
+        [Required]
         public int PatientId { get; set; }
+
+        [Required]
         public int ReportId { get; set; }
-        public int SectorId { get; set; }
-        public string SectorName { get; set; }
-        public List<SelectListItem> Doctors { get; set; } = new();
-        public List<SelectListItem> AvailableDates { get; set; } = new();
-        public List<SelectListItem> AvailableTimes { get; set; } = new();
+
+        [Required]
         public int SelectedDoctorId { get; set; }
+
+        [Required]
         public DateTime PreferredDate { get; set; }
-        public TimeSpan PreferredTime { get; set; }
+
+        [Required]
+        public int SelectedTimeSlotId { get; set; }
+
+        public string SectorName { get; set; }
+
+        [BindNever]
+        public IEnumerable<SelectListItem> Doctors { get; set; }
+
+        [BindNever]
+        public IEnumerable<SelectListItem> TimeSlots { get; set; }
     }
 }

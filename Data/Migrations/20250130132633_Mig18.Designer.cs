@@ -4,6 +4,7 @@ using AppointAid.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppointAid.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250130132633_Mig18")]
+    partial class Mig18
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,7 +61,7 @@ namespace AppointAid.Data.Migrations
                     b.HasIndex("TimeSlotId")
                         .IsUnique();
 
-                    b.ToTable("Appointments", (string)null);
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("AppointAid.Models.Doctor", b =>
@@ -96,7 +99,7 @@ namespace AppointAid.Data.Migrations
 
                     b.HasIndex("SectorId");
 
-                    b.ToTable("Doctors", (string)null);
+                    b.ToTable("Doctors");
                 });
 
             modelBuilder.Entity("AppointAid.Models.EmergencyResponse", b =>
@@ -147,7 +150,7 @@ namespace AppointAid.Data.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("EmergencyResponses", (string)null);
+                    b.ToTable("EmergencyResponses");
                 });
 
             modelBuilder.Entity("AppointAid.Models.MedicalCenter", b =>
@@ -168,7 +171,7 @@ namespace AppointAid.Data.Migrations
 
                     b.HasKey("MedicalCenterId");
 
-                    b.ToTable("MedicalCenters", (string)null);
+                    b.ToTable("MedicalCenters");
                 });
 
             modelBuilder.Entity("AppointAid.Models.MedicalTest", b =>
@@ -195,15 +198,15 @@ namespace AppointAid.Data.Migrations
                     b.Property<string>("Results")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("ScheduledDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan?>("ScheduledTime")
-                        .HasColumnType("time");
-
                     b.Property<string>("TestName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Time")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("TimeSlotId")
+                        .HasColumnType("int");
 
                     b.HasKey("MedicalTestId");
 
@@ -211,7 +214,11 @@ namespace AppointAid.Data.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("MedicalTests", (string)null);
+                    b.HasIndex("TimeSlotId")
+                        .IsUnique()
+                        .HasFilter("[TimeSlotId] IS NOT NULL");
+
+                    b.ToTable("MedicalTests");
                 });
 
             modelBuilder.Entity("AppointAid.Models.Nurse", b =>
@@ -245,7 +252,7 @@ namespace AppointAid.Data.Migrations
 
                     b.HasIndex("MedicalCenterId");
 
-                    b.ToTable("Nurses", (string)null);
+                    b.ToTable("Nurses");
                 });
 
             modelBuilder.Entity("AppointAid.Models.Patient", b =>
@@ -281,7 +288,7 @@ namespace AppointAid.Data.Migrations
 
                     b.HasKey("PatientId");
 
-                    b.ToTable("Patients", (string)null);
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("AppointAid.Models.PatientReport", b =>
@@ -326,7 +333,7 @@ namespace AppointAid.Data.Migrations
                         .IsUnique()
                         .HasFilter("[SectorId] IS NOT NULL");
 
-                    b.ToTable("PatientReports", (string)null);
+                    b.ToTable("PatientReports");
                 });
 
             modelBuilder.Entity("AppointAid.Models.Sector", b =>
@@ -348,7 +355,7 @@ namespace AppointAid.Data.Migrations
 
                     b.HasIndex("MedicalCenterId");
 
-                    b.ToTable("Sectors", (string)null);
+                    b.ToTable("Sectors");
                 });
 
             modelBuilder.Entity("AppointAid.Models.TimeSlot", b =>
@@ -378,7 +385,7 @@ namespace AppointAid.Data.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("TimeSlots", (string)null);
+                    b.ToTable("TimeSlots");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -661,9 +668,16 @@ namespace AppointAid.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("AppointAid.Models.TimeSlot", "TimeSlot")
+                        .WithOne()
+                        .HasForeignKey("AppointAid.Models.MedicalTest", "TimeSlotId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.Navigation("Doctor");
 
                     b.Navigation("Patient");
+
+                    b.Navigation("TimeSlot");
                 });
 
             modelBuilder.Entity("AppointAid.Models.Nurse", b =>

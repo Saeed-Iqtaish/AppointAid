@@ -1,8 +1,4 @@
-﻿@{
-    ViewData["Title"] = "Appointments";
-    var upcomingAppointments = ViewBag.UpcomingAppointments as List<AppointAid.Models.Appointment> ?? new List<AppointAid.Models.Appointment>();
-    var previousAppointments = ViewBag.PreviousAppointments as List<AppointAid.Models.Appointment> ?? new List<AppointAid.Models.Appointment>();
-}
+﻿@model AppointAid.ViewModels.AppointmentsViewModel
 
 <div class="container mt-4">
     <h1 class="text-center">Appointments</h1>
@@ -13,35 +9,25 @@
             <h4 class="m-0">Upcoming Appointments</h4>
         </div>
         <div class="card-body">
-            @if (upcomingAppointments.Any())
+            @if (Model.UpcomingAppointments.Any())
             {
-                @foreach (var appointment in upcomingAppointments)
+                foreach (var appointment in Model.UpcomingAppointments)
                 {
                     <div class="card mb-3">
                         <div class="card-body">
-                            <p><strong>Doctor:</strong> Dr. @appointment.Doctor?.FullName ?? "Unknown"</p>
-                            <p><strong>Medical Center:</strong> @appointment.Doctor?.Sector?.MedicalCenter?.MedicalCenterName ?? "Unknown"</p>
-                            <p><strong>Sector:</strong> @appointment.Doctor?.Sector?.Name ?? "Unknown"</p>
-                            <p><strong>Date:</strong> @appointment.TimeSlot?.StartTime.ToString("MMMM dd, yyyy h:mm tt") ?? "Not Scheduled"</p>
+                            <p><strong>Doctor:</strong> Dr. @appointment.Doctor?.FullName</p>
+                            <p><strong>Medical Center:</strong> @appointment.Doctor?.Sector?.MedicalCenter?.MedicalCenterName</p>
+                            <p><strong>Sector:</strong> @appointment.Doctor?.Sector?.Name"</p>
+                            <p><strong>Date:</strong> @appointment.TimeSlot?.Date.ToString("MMMM dd, yyyy")</p>
                             <p><strong>Status:</strong> @appointment.Status</p>
-                            <div class="d-flex justify-content-between">
-                                <button class="btn btn-primary btn-sm">Get Location</button>
-                                <button class="btn btn-warning btn-sm">Reschedule</button>
-                                <button class="btn btn-danger btn-sm">Cancel</button>
-                            </div>
                         </div>
                     </div>
                 }
             }
             else
             {
-                <p>No upcoming appointments.</p>
+                <p>No upcoming appointments available.</p>
             }
-        </div>
-        <div class="card-footer text-center">
-            <a class="btn btn-primary" asp-controller="Patients" asp-action="Symptoms">
-                <i class="bi bi-calendar-plus"></i> Set New Appointment
-            </a>
         </div>
     </div>
 
@@ -51,32 +37,62 @@
             <h4 class="m-0">Previous Appointments</h4>
         </div>
         <div class="card-body">
-            @if (previousAppointments.Any())
+            @if (Model.PreviousAppointments.Any())
             {
-                @foreach (var appointment in previousAppointments)
+                foreach (var appointment in Model.PreviousAppointments)
                 {
                     <div class="card mb-3">
                         <div class="card-body">
-                            <p><strong>Doctor:</strong> Dr. @appointment.Doctor?.FullName ?? "Unknown"</p>
-                            <p><strong>Medical Center:</strong> @appointment.Doctor?.Sector?.MedicalCenter?.MedicalCenterName ?? "Unknown"</p>
-                            <p><strong>Sector:</strong> @appointment.Doctor?.Sector?.Name ?? "Unknown"</p>
-                            <p><strong>Date:</strong> @appointment.TimeSlot?.StartTime.ToString("MMMM dd, yyyy h:mm tt") ?? "Not Scheduled"</p>
+                            <p><strong>Doctor:</strong> Dr. @appointment.Doctor?.FullName"</p>
+                            <p><strong>Medical Center:</strong> @appointment.Doctor?.Sector?.MedicalCenter?.MedicalCenterName </p>
+                            <p><strong>Sector:</strong> @appointment.Doctor?.Sector?.Name</p>
+                            <p><strong>Date:</strong> @appointment.TimeSlot?.Date.ToString("MMMM dd, yyyy") ?? "Not Scheduled"</p>
                             <p><strong>Status:</strong> @appointment.Status</p>
-                            @if (appointment.Status == "Completed")
-                            {
-                                <button class="btn btn-info btn-sm">View Medical Report</button>
-                            }
                         </div>
                     </div>
                 }
             }
             else
             {
-                <p>No previous appointments.</p>
+                <p>No previous appointments available.</p>
             }
-        </div>
-        <div class="card-footer text-center">
-            <button class="btn btn-secondary">More</button>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".cancel-appointment").forEach(button => {
+            button.addEventListener("click", function () {
+                let appointmentId = this.getAttribute("data-appointment-id");
+
+                if (!confirm("Are you sure you want to cancel this appointment?")) {
+                    return;
+                }
+
+                fetch('/Patients/CancelAppointment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ appointmentId: appointmentId })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to cancel the appointment');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    location.reload(); // Reload to update the UI
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Failed to cancel appointment. Please try again.");
+                });
+            });
+        });
+    });
+</script>

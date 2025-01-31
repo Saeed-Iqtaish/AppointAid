@@ -2,10 +2,10 @@
 {
     public class PatientReport
     {
-        public int PatientReportId { get; set; } // Primary Key
-        public int PatientId { get; set; } // Foreign Key to Patient
-        public int? NurseId { get; set; } // Foreign Key to Nurse
-        public int? SectorId { get; set; } // Foreign Key to Sector
+        public int PatientReportId { get; set; }
+        public int PatientId { get; set; }
+        public int? NurseId { get; set; }
+        public int? SectorId { get; set; }
         public string? PatientSymptoms { get; set; }
         public int? Severity { get; set; }
         public string? Diagnosis { get; set; }

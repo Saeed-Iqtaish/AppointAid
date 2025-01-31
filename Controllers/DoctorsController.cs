@@ -30,159 +30,24 @@ namespace AppointAid.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Fetch requested tests for the doctor
             var requestedTests = await _context.MedicalTests
                 .Include(mt => mt.Patient)
-                .Where(mt => mt.DoctorId == doctorId && mt.IsApproved == null) // Pending approval
+                .Where(mt => mt.DoctorId == doctorId && mt.IsApproved == null) 
                 .ToListAsync();
 
-            // Fetch upcoming appointments for the doctor
             var upcomingAppointments = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.TimeSlot)
                 .Include(a => a.Doctor)
-                .Where(a => a.DoctorId == doctorId && a.TimeSlot.Date > DateTime.Now)
+                .Where(a => a.DoctorId == doctorId
+                            && a.TimeSlot.Date > DateTime.Now
+                            && a.Status == "Confirmed")
                 .ToListAsync();
 
             ViewBag.RequestedTests = requestedTests;
             ViewBag.UpcomingAppointments = upcomingAppointments;
 
             return View();
-        }
-
-        // GET: Doctors1/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var doctor = await _context.Doctors
-                .Include(d => d.Sector)
-                .FirstOrDefaultAsync(m => m.DoctorId == id);
-            if (doctor == null)
-            {
-                return NotFound();
-            }
-
-            return View(doctor);
-        }
-
-        // GET: Doctors1/Create
-        public IActionResult Create()
-        {
-            ViewData["SectorId"] = new SelectList(_context.Sectors, "SectorId", "SectorId");
-            return View();
-        }
-
-        // POST: Doctors1/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DoctorId,FirstName,LastName,NationalNumber,SectorId,Specialty,PasswordHash")] Doctor doctor)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(doctor);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["SectorId"] = new SelectList(_context.Sectors, "SectorId", "SectorId", doctor.SectorId);
-            return View(doctor);
-        }
-
-        // GET: Doctors1/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var doctor = await _context.Doctors.FindAsync(id);
-            if (doctor == null)
-            {
-                return NotFound();
-            }
-            ViewData["SectorId"] = new SelectList(_context.Sectors, "SectorId", "SectorId", doctor.SectorId);
-            return View(doctor);
-        }
-
-        // POST: Doctors1/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DoctorId,FirstName,LastName,NationalNumber,SectorId,Specialty,PasswordHash")] Doctor doctor)
-        {
-            if (id != doctor.DoctorId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(doctor);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!DoctorExists(doctor.DoctorId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["SectorId"] = new SelectList(_context.Sectors, "SectorId", "SectorId", doctor.SectorId);
-            return View(doctor);
-        }
-
-        // GET: Doctors1/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var doctor = await _context.Doctors
-                .Include(d => d.Sector)
-                .FirstOrDefaultAsync(m => m.DoctorId == id);
-            if (doctor == null)
-            {
-                return NotFound();
-            }
-
-            return View(doctor);
-        }
-
-        // POST: Doctors1/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var doctor = await _context.Doctors.FindAsync(id);
-            if (doctor != null)
-            {
-                _context.Doctors.Remove(doctor);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool DoctorExists(int id)
-        {
-            return _context.Doctors.Any(e => e.DoctorId == id);
         }
 
         [HttpGet]
@@ -231,13 +96,12 @@ namespace AppointAid.Controllers
         }
 
 
-        // GET: RequestedTests
         [HttpGet]
         public async Task<IActionResult> RequestedTests()
         {
             var tests = await _context.MedicalTests
                 .Include(mt => mt.Patient)
-                .Where(mt => mt.IsApproved == null) // Fetch pending tests
+                .Where(mt => mt.IsApproved == null)
                 .ToListAsync();
 
             return View(tests);
@@ -268,10 +132,16 @@ namespace AppointAid.Controllers
             if (test == null)
             {
                 TempData["ErrorMessage"] = "Test not found.";
-                return RedirectToAction("Index");
+                return RedirectToAction("RequestedTests");
             }
 
             test.IsApproved = approve;
+
+            if (approve)
+            {
+                test.ScheduledDate = null;
+                test.ScheduledTime = null;
+            }
 
             _context.MedicalTests.Update(test);
             await _context.SaveChangesAsync();
@@ -283,10 +153,13 @@ namespace AppointAid.Controllers
         [HttpGet]
         public IActionResult SetSchedule()
         {
+            var startDate = DateTime.Now.Date.AddDays(7 - (int)DateTime.Now.DayOfWeek);
+            var endDate = startDate.AddDays(6);
+
             var viewModel = new WeeklyScheduleViewModel
             {
-                StartDate = DateTime.Now.Date,
-                EndDate = DateTime.Now.Date.AddDays(7),
+                StartDate = startDate,
+                EndDate = endDate,
                 Days = Enum.GetNames(typeof(DayOfWeek)).Select(day => new ScheduleDay
                 {
                     Day = day,
@@ -315,38 +188,34 @@ namespace AppointAid.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Remove existing time slots within the specified range for the doctor
-            var existingTimeSlots = await _context.DoctorTimeSlots
-                .Include(dts => dts.TimeSlot)
-                .Where(dts => dts.DoctorId == doctorId && dts.TimeSlot.Date >= model.StartDate && dts.TimeSlot.Date <= model.EndDate)
+            var existingTimeSlots = await _context.TimeSlots
+                .Where(ts => ts.DoctorId == doctorId && ts.Date >= model.StartDate && ts.Date <= model.EndDate)
                 .ToListAsync();
 
-            _context.DoctorTimeSlots.RemoveRange(existingTimeSlots);
+            _context.TimeSlots.RemoveRange(existingTimeSlots);
             await _context.SaveChangesAsync();
 
-            // Add new schedule
             foreach (var day in model.Days.Where(d => d.IsAvailable))
             {
                 for (var date = model.StartDate; date <= model.EndDate; date = date.AddDays(1))
                 {
                     if (Enum.GetName(typeof(DayOfWeek), date.DayOfWeek) == day.Day)
                     {
-                        var timeSlot = new TimeSlot
+                        var currentTime = day.StartTime.Value;
+                        while (currentTime.Add(TimeSpan.FromMinutes(20)) <= day.EndTime.Value)
                         {
-                            Date = date,
-                            StartTime = day.StartTime.Value,
-                            EndTime = day.EndTime.Value,
-                            Availability = true
-                        };
+                            var timeSlot = new TimeSlot
+                            {
+                                DoctorId = doctorId.Value,
+                                Date = date,
+                                StartTime = currentTime,
+                                EndTime = currentTime.Add(TimeSpan.FromMinutes(20)),
+                                Availability = true
+                            };
 
-                        _context.TimeSlots.Add(timeSlot);
-                        await _context.SaveChangesAsync();
-
-                        _context.DoctorTimeSlots.Add(new DoctorTimeSlot
-                        {
-                            DoctorId = doctorId.Value,
-                            TimeSlotId = timeSlot.TimeSlotId
-                        });
+                            _context.TimeSlots.Add(timeSlot);
+                            currentTime = currentTime.Add(TimeSpan.FromMinutes(20));
+                        }
                     }
                 }
             }
@@ -354,6 +223,164 @@ namespace AppointAid.Controllers
             await _context.SaveChangesAsync();
             TempData["Message"] = "Schedule saved successfully!";
             return RedirectToAction("Index", "Doctors");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ViewPatientReport(int reportId)
+        {
+            var report = await _context.PatientReports
+                .Include(r => r.Patient)
+                .Include(r => r.Sector)
+                .FirstOrDefaultAsync(r => r.PatientReportId == reportId);
+
+            if (report == null)
+            {
+                TempData["ErrorMessage"] = "Patient report not found.";
+                return RedirectToAction("Index");
+            }
+
+            return View(report);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdatePatientReport(PatientReport report)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Invalid data. Please try again.";
+                return View("ViewPatientReport", report);
+            }
+
+            var existingReport = await _context.PatientReports.FindAsync(report.PatientReportId);
+            if (existingReport == null)
+            {
+                TempData["ErrorMessage"] = "Patient report not found.";
+                return RedirectToAction("Index");
+            }
+
+            existingReport.Diagnosis = report.Diagnosis;
+            existingReport.Treatment = report.Treatment;
+
+            var associatedAppointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.PatientReportId == report.PatientReportId);
+
+            if (associatedAppointment != null)
+            {
+                associatedAppointment.Status = "Completed";
+                _context.Appointments.Update(associatedAppointment);
+            }
+
+            _context.PatientReports.Update(existingReport);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Patient report and appointment updated successfully!";
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Reschedule(int appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Doctor)
+                .ThenInclude(d => d.Sector)
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Index");
+            }
+
+            var model = new RescheduleAppointmentViewModel
+            {
+                AppointmentId = appointmentId,
+                SectorName = appointment.Doctor?.Sector?.Name ?? "Unknown"
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reschedule(RescheduleAppointmentViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Invalid data.";
+                return View(model);
+            }
+
+            var appointment = await _context.Appointments.FindAsync(model.AppointmentId);
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Index");
+            }
+
+            var timeSlot = await _context.TimeSlots.FindAsync(model.SelectedTimeSlotId);
+            if (timeSlot == null || !timeSlot.Availability)
+            {
+                TempData["ErrorMessage"] = "The selected time slot is unavailable.";
+                return RedirectToAction("Reschedule", new { id = model.AppointmentId });
+            }
+
+            timeSlot.Availability = false;
+            appointment.TimeSlotId = model.SelectedTimeSlotId;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Appointment rescheduled successfully.";
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableTimeSlots(DateTime selectedDate)
+        {
+            var slots = await _context.TimeSlots
+                .Where(ts => ts.Date.Date == selectedDate.Date && ts.Availability)
+                .Select(ts => new
+                {
+                    timeSlotId = ts.TimeSlotId,
+                    startTime = ts.StartTime.ToString("hh:mm tt"),
+                    endTime = ts.EndTime.ToString("hh:mm tt")
+                })
+                .ToListAsync();
+
+            return Json(slots);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelAppointment(int appointmentId)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.TimeSlot)
+                .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
+
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Index");
+            }
+
+            if (appointment.Status == "Cancelled")
+            {
+                TempData["ErrorMessage"] = "The appointment is already cancelled.";
+                return RedirectToAction("Index");
+            }
+
+            appointment.Status = "Cancelled";
+            if (appointment.TimeSlot != null)
+            {
+                appointment.TimeSlot.Availability = true;
+            }
+
+            _context.Appointments.Update(appointment);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Appointment cancelled successfully.";
+            return RedirectToAction("Index");
         }
     }
 }

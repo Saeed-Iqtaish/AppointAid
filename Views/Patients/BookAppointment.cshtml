@@ -1,44 +1,147 @@
 ﻿@model AppointAid.ViewModels.BookAppointmentViewModel
 
-<h2>Book Appointment</h2>
+<div class="container mx-auto my-8 p-6 bg-white rounded shadow-md">
+    <h2 class="text-xl font-bold text-center mb-6">Sector: @Model.SectorName</h2>
 
-<form asp-action="BookAppointment" method="post">
-    <input type="hidden" asp-for="ReportId" />
-    <input type="hidden" asp-for="PatientId" />
+    <form method="post" asp-action="BookAppointment">
+        @Html.AntiForgeryToken()
 
-    <div class="form-group">
-        <label for="SelectedDoctorId">Choose Doctor</label>
-        <select asp-for="SelectedDoctorId" asp-items="Model.Doctors" class="form-control"></select>
-    </div>
+        <input type="hidden" asp-for="PatientId" />
+        <input type="hidden" asp-for="ReportId" />
+        <input type="hidden" asp-for="SelectedDoctorId" id="hidden-doctor-id" />
+        <input type="hidden" asp-for="PreferredDate" id="hidden-preferred-date" />
+        <input type="hidden" asp-for="SectorName" />
 
-    <div class="form-group">
-        <label for="PreferredDate">Preferred Date</label>
-        <input type="date" asp-for="PreferredDate" class="form-control" />
-    </div>
+        <div id="step-1">
+            <label for="doctorDropdown">Choose Doctor</label>
+            <select id="doctorDropdown" class="form-control">
+                <option value="">Select</option>
+                @foreach (var doctor in Model.Doctors)
+                {
+                    <option value="@doctor.Value">@doctor.Text</option>
+                }
+            </select>
+            <button type="button" id="confirm-doctor-btn" class="btn btn-primary mt-4">Confirm</button>
+            <button type="button" id="go-back-doctor-btn" class="btn btn-secondary mt-4" style="display: none;">Go Back</button>
+        </div>
 
-    <div class="form-group">
-        <label for="PreferredTime">Preferred Time</label>
-        <select id="time-select" asp-for="PreferredTime" class="form-control">
-            <option value="">Select a time</option>
-        </select>
-    </div>
+        <div id="step-2" style="display: none;">
+            <label for="dateDropdown">Choose Preferred Date</label>
+            <select id="dateDropdown" class="form-control">
+                <option value="">Select</option>
+            </select>
+            <button type="button" id="confirm-day-btn" class="btn btn-primary mt-4">Confirm</button>
+            <button type="button" id="go-back-day-btn" class="btn btn-secondary mt-4" style="display: none;">Go Back</button>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Book</button>
-</form>
+        <div id="step-3" style="display: none;">
+            <label for="timeSlotDropdown">Choose Time Slot</label>
+            <select asp-for="SelectedTimeSlotId" class="form-control" id="timeSlotDropdown">
+                <option value="">Select</option>
+            </select>
+            <button type="submit" class="btn btn-primary mt-4">Book Appointment</button>
+        </div>
+    </form>
+</div>
 
 <script>
-    document.getElementById("PreferredDate").addEventListener("change", function () {
-        const doctorId = document.getElementById("SelectedDoctorId").value;
-        const date = this.value;
+                      document.addEventListener("DOMContentLoaded", function () {
+        const doctorDropdown = document.getElementById("doctorDropdown");
+        const confirmDoctorBtn = document.getElementById("confirm-doctor-btn");
+        const goBackDoctorBtn = document.getElementById("go-back-doctor-btn");
 
-        fetch(`/Patients/GetAvailableTimes?doctorId=${doctorId}&date=${date}`)
-            .then(response => response.json())
-            .then(times => {
-                const timeSelect = document.getElementById("time-select");
-                timeSelect.innerHTML = '<option value="">Select a time</option>';
-                times.forEach(t => {
-                    timeSelect.innerHTML += `<option value="${t.Time}">${t.Time}</option>`;
+        const step1 = document.getElementById("step-1");
+        const step2 = document.getElementById("step-2");
+        const dateDropdown = document.getElementById("dateDropdown");
+        const confirmDayBtn = document.getElementById("confirm-day-btn");
+        const goBackDayBtn = document.getElementById("go-back-day-btn");
+
+        const step3 = document.getElementById("step-3");
+        const timeSlotDropdown = document.getElementById("timeSlotDropdown");
+
+        const hiddenDoctorId = document.getElementById("hidden-doctor-id");
+        const hiddenPreferredDate = document.getElementById("hidden-preferred-date");
+
+        let selectedDoctorId = null;
+        let selectedDate = null;
+
+            confirmDoctorBtn.addEventListener("click", async function () {
+        selectedDoctorId = doctorDropdown.value;
+        if (!selectedDoctorId) {
+            alert("Please select a doctor before confirming.");
+            return;
+        }
+
+        hiddenDoctorId.value = selectedDoctorId;
+        doctorDropdown.disabled = true;
+        confirmDoctorBtn.style.display = "none";
+        goBackDoctorBtn.style.display = "block";
+
+        try {
+            const response = await fetch(`/Patients/GetDoctorSchedule?doctorId=${selectedDoctorId}`);
+            const availableDays = await response.json();
+
+            dateDropdown.innerHTML = '<option value="">Select a Day</option>';
+               availableDays.forEach(date => {
+        const formattedDate = new Date(date).toISOString().split("T")[0];
+        dateDropdown.innerHTML += `<option value="${formattedDate}">${formattedDate}</option>`;
+    });
+
+
+            step2.style.display = "block";
+        } catch (error) {
+            console.error("Error fetching doctor schedule:", error);
+            alert("Failed to fetch available days. Please try again.");
+        }
+    });
+
+        goBackDoctorBtn.addEventListener("click", function () {
+            doctorDropdown.disabled = false;
+            confirmDoctorBtn.style.display = "block";
+            goBackDoctorBtn.style.display = "none";
+
+            step2.style.display = "none";
+            step3.style.display = "none";
+            dateDropdown.innerHTML = '<option value="">Select a Day</option>';
+            timeSlotDropdown.innerHTML = '<option value="">Select</option>';
+        });
+
+        confirmDayBtn.addEventListener("click", async function () {
+            selectedDate = dateDropdown.value;
+            if (!selectedDate) {
+                alert("Please select a day before confirming.");
+                return;
+            }
+
+            hiddenPreferredDate.value = selectedDate;
+            dateDropdown.disabled = true;
+            confirmDayBtn.style.display = "none";
+            goBackDayBtn.style.display = "block";
+
+            try {
+                const response = await fetch(`/Patients/GetAvailableTimeSlots?doctorId=${selectedDoctorId}&selectedDate=${selectedDate}`);
+                const availableTimeSlots = await response.json();
+
+                timeSlotDropdown.innerHTML = '<option value="">Select</option>';
+                availableTimeSlots.forEach(slot => {
+                    if (slot.startTime && slot.endTime) {
+                        timeSlotDropdown.innerHTML += `<option value="${slot.timeSlotId}">${slot.startTime} - ${slot.endTime}</option>`;
+                    }
                 });
-            });
+
+                step3.style.display = "block";
+            } catch (error) {
+                console.error("Error fetching available time slots:", error);
+            }
+        });
+
+        goBackDayBtn.addEventListener("click", function () {
+            dateDropdown.disabled = false;
+            confirmDayBtn.style.display = "block";
+            goBackDayBtn.style.display = "none";
+
+            step3.style.display = "none";
+            timeSlotDropdown.innerHTML = '<option value="">Select</option>';
+        });
     });
 </script>

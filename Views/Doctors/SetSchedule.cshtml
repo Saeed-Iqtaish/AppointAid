@@ -1,59 +1,53 @@
 ﻿@model AppointAid.ViewModels.WeeklyScheduleViewModel
 
-@{
-    ViewData["Title"] = "Set Weekly Schedule";
-}
+<div class="container mx-auto p-6 bg-white rounded shadow-md">
+    <h2 class="text-xl font-bold text-center mb-4">Set Weekly Schedule</h2>
 
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h4>Set Weekly Schedule</h4>
+    <form method="post" asp-action="SetSchedule" class="space-y-4">
+        @Html.AntiForgeryToken()
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block font-medium text-gray-700">Start Date</label>
+                <input type="date" asp-for="StartDate" class="form-control" readonly />
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">End Date</label>
+                <input type="date" asp-for="EndDate" class="form-control" readonly />
+            </div>
         </div>
-        <div class="card-body">
-            <form asp-action="SetSchedule" method="post">
-                <div class="row mb-3">
-                    <div class="col">
-                        <label asp-for="StartDate" class="form-label">Start Date</label>
-                        <input asp-for="StartDate" type="date" class="form-control" />
-                    </div>
-                    <div class="col">
-                        <label asp-for="EndDate" class="form-label">End Date</label>
-                        <input asp-for="EndDate" type="date" class="form-control" />
-                    </div>
-                </div>
 
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Available</th>
-                            <th>Day</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (var i = 0; i < Model.Days.Count; i++)
-                        {
-                            <tr>
-                                <td>
-                                    <input asp-for="Days[@i].IsAvailable" type="checkbox" />
-                                </td>
-                                <td>
-                                    <input asp-for="Days[@i].Day" class="form-control" readonly />
-                                </td>
-                                <td>
-                                    <input asp-for="Days[@i].StartTime" type="time" class="form-control" />
-                                </td>
-                                <td>
-                                    <input asp-for="Days[@i].EndTime" type="time" class="form-control" />
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+        <table class="table-auto w-full text-left border-collapse">
+            <thead>
+                <tr>
+                    <th class="border px-4 py-2">Available</th>
+                    <th class="border px-4 py-2">Day</th>
+                    <th class="border px-4 py-2">Start Time</th>
+                    <th class="border px-4 py-2">End Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Days.Count; i++)
+                {
+                    <tr>
+                        <td class="border px-4 py-2">
+                            <input type="checkbox" asp-for="@Model.Days[i].IsAvailable" />
+                        </td>
+                        <td class="border px-4 py-2">
+                            @Model.Days[i].Day
+                            <input type="hidden" asp-for="@Model.Days[i].Day" />
+                        </td>
+                        <td class="border px-4 py-2">
+                            <input type="time" asp-for="@Model.Days[i].StartTime" class="form-control" />
+                        </td>
+                        <td class="border px-4 py-2">
+                            <input type="time" asp-for="@Model.Days[i].EndTime" class="form-control" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-                <button type="submit" class="btn btn-primary">Confirm</button>
-            </form>
-        </div>
-    </div>
+        <button type="submit" class="btn btn-primary mt-4">Confirm</button>
+    </form>
 </div>

@@ -36,7 +36,6 @@ namespace AppointAid.Controllers
 
             object user = null;
 
-            // Identify the user based on the role and national number
             switch (model.Role)
             {
                 case "Doctor":
@@ -60,16 +59,13 @@ namespace AppointAid.Controllers
                     _ => null
                 };
 
-                // Validate the password
                 if (storedPassword == model.Password)
                 {
                     TempData["Message"] = $"Welcome back, {model.Role}!";
 
-                    // Set session variables
                     HttpContext.Session.SetString("UserRole", model.Role);
                     HttpContext.Session.SetString("UserId", model.NationalNumber);
 
-                    // Set specific IDs in the session based on the role
                     switch (model.Role)
                     {
                         case "Patient" when user is Patient patient:
@@ -85,7 +81,6 @@ namespace AppointAid.Controllers
                             break;
                     }
 
-                    // Redirect based on the role
                     return model.Role switch
                     {
                         "Doctor" => RedirectToAction("Index", "Doctors"),
@@ -129,7 +124,6 @@ namespace AppointAid.Controllers
                 return View(model);
             }
 
-            // Check if the NationalNumber is already registered
             bool patientExists = await _patientService.IsPatientExistsAsync(model.NationalNumber);
             if (patientExists)
             {
@@ -137,7 +131,6 @@ namespace AppointAid.Controllers
                 return View(model);
             }
 
-            // Map RegisterViewModel to Patient entity
             var patient = new Patient
             {
                 FirstName = model.FirstName,
@@ -145,10 +138,9 @@ namespace AppointAid.Controllers
                 NationalNumber = model.NationalNumber,
                 DateOfBirth = model.DateOfBirth,
                 PhoneNumber = model.PhoneNumber,
-                PasswordHash = model.Password // Store the plain-text password
+                PasswordHash = model.Password
             };
 
-            // Add patient to the database
             await _patientService.AddPatientAsync(patient);
 
             TempData["Message"] = "Registration successful! Please log in.";

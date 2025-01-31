@@ -11,132 +11,127 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg" style="background-color: #258cfb;">
-            <div class="container-fluid">
-                <!-- Brand Logo -->
-                <a class="navbar-brand text-white d-flex align-items-center" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-heart-fill me-2" style="font-size: 1.5rem;"></i>
-                    <span class="fw-bold">AppointAid</span>
-                </a>
+    @if (ViewContext.RouteData.Values["action"].ToString() != "Login" && ViewContext.RouteData.Values["action"].ToString() != "Register")
+    {
+        <header>
+            <nav class="navbar navbar-expand-lg" style="background-color: #258cfb;">
+                <div class="container-fluid">
+                    <a class="navbar-brand text-white d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-heart-fill me-2" style="font-size: 1.5rem;"></i>
+                        <span class="fw-bold">AppointAid</span>
+                    </a>
 
-                <!-- Toggler for Mobile -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                    <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+                        @if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Doctor")
+                        {
+                            <!-- Doctor Navigation -->
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["controller"].ToString() == "Doctors" ? "active" : "")"
+                                    asp-controller="Doctors" asp-action="Index">
+                                        <i class="bi bi-house-door me-1"></i> Home
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "MedicalTests" ? "active" : "")"
+                                    asp-controller="Doctors" asp-action="RequestedTests">
+                                        <i class="bi bi-journal-medical me-1"></i> Requested Tests
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Appointments" ? "active" : "")"
+                                    asp-controller="Doctors" asp-action="SetSchedule">
+                                        <i class="bi bi-calendar-range me-1"></i> Set Schedule
+                                    </a>
+                                </li>
+                            </ul>
+                        }
+                        else if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Patient")
+                        {
+                            <!-- Patient Navigation -->
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["controller"].ToString() == "Patients" ? "active" : "")"
+                                    asp-controller="Patients" asp-action="Index">
+                                        <i class="bi bi-house-door me-1"></i> Home
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Appointments" ? "active" : "")"
+                                    asp-controller="Patients" asp-action="MedicalAppointments">
+                                        <i class="bi bi-calendar-check me-1"></i> Doctors Appointments
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "MedicalTests" ? "active" : "")"
+                                    asp-controller="Patients" asp-action="MedicalTests">
+                                        <i class="bi bi-flask me-1"></i> Medical Tests
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "EmergencyResponses" ? "active" : "")"
+                                    asp-controller="Patients" asp-action="Emergency">
+                                        <i class="bi bi-lightning-fill me-1"></i> Emergency
+                                    </a>
+                                </li>
+                            </ul>
+                        }
+                        else if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Nurse")
+                        {
+                            <!-- Nurse Navigation -->
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["controller"].ToString() == "Nurse" ? "active" : "")"
+                                    asp-controller="Nurses" asp-action="Index">
+                                        <i class="bi bi-journal-check me-1"></i> Patient Reports
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Emergency" ? "active" : "")"
+                                    asp-controller="Nurses" asp-action="EmergencyRequests">
+                                        <i class="bi bi-lightning me-1"></i> Emergency
+                                    </a>
+                                </li>
+                            </ul>
+                        }
+                        else
+                        {
+                            <!-- Default Navigation (Non-Logged-in Users) -->
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Account" asp-action="Login">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Account" asp-action="Register">
+                                        <i class="bi bi-person-plus me-1"></i> Register
+                                    </a>
+                                </li>
+                            </ul>
+                        }
 
-                <!-- Navbar Links -->
-                <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
-                    @if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Doctor")
-                    {
-                        <!-- Doctor Navigation -->
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["controller"].ToString() == "Doctors" ? "active" : "")"
-                                   asp-controller="Doctors" asp-action="Index">
-                                    <i class="bi bi-house-door me-1"></i> Home
+                        @if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Doctor" || HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Patient" || HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Nurse")
+                        {
+                            <div class="d-flex align-items-center">
+                                <a href="#" class="me-3 text-white">
+                                    <i class="bi bi-bell"></i>
                                 </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "MedicalTests" ? "active" : "")"
-                                   asp-controller="Doctors" asp-action="RequestedTests">
-                                    <i class="bi bi-journal-medical me-1"></i> Requested Tests
+                                <a href="#" class="me-3 text-white">
+                                    <i class="bi bi-gear"></i>
                                 </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Appointments" ? "active" : "")"
-                                   asp-controller="Doctors" asp-action="SetSchedule">
-                                    <i class="bi bi-calendar-range me-1"></i> Set Schedule
-                                </a>
-                            </li>
-                        </ul>
-                    }
-                    else if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Patient")
-                    {
-                        <!-- Patient Navigation -->
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["controller"].ToString() == "Patients" ? "active" : "")"
-                                   asp-controller="Patients" asp-action="Index">
-                                    <i class="bi bi-house-door me-1"></i> Home
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Appointments" ? "active" : "")"
-                                   asp-controller="Patients" asp-action="MedicalAppointments">
-                                    <i class="bi bi-calendar-check me-1"></i> Doctors Appointments
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "MedicalTests" ? "active" : "")"
-                                   asp-controller="Patients" asp-action="MedicalTests">
-                                    <i class="bi bi-flask me-1"></i> Medical Tests
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "EmergencyResponses" ? "active" : "")"
-                                   asp-controller="Patients" asp-action="Emergency">
-                                    <i class="bi bi-lightning-fill me-1"></i> Emergency
-                                </a>
-                            </li>
-                        </ul>
-                    }
-                    else if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Nurse")
-                    {
-                        <!-- Nurse Navigation -->
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["controller"].ToString() == "Nurse" ? "active" : "")"
-                                   asp-controller="Nurses" asp-action="Index">
-                                    <i class="bi bi-journal-check me-1"></i> Patient Reports
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @(ViewContext.RouteData.Values["controller"].ToString() == "Emergency" ? "active" : "")"
-                                   asp-controller="Nurses" asp-action="EmergencyRequests">
-                                    <i class="bi bi-lightning me-1"></i> Emergency
-                                </a>
-                            </li>
-                        </ul>
-                    }
-                    else
-                    {
-                        <!-- Default Navigation (Non-Logged-in Users) -->
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">
-                                    <i class="bi bi-box-arrow-in-right me-1"></i> Login
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Register">
-                                    <i class="bi bi-person-plus me-1"></i> Register
-                                </a>
-                            </li>
-                        </ul>
-                    }
-
-                    <!-- Right-side Icons -->
-                    @if (HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Doctor" || HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Patient" || HttpContextAccessor.HttpContext.Session.GetString("UserRole") == "Nurse")
-                    {
-                        <div class="d-flex align-items-center">
-                            <a href="#" class="me-3 text-white">
-                                <i class="bi bi-bell"></i>
-                            </a>
-                            <a href="#" class="me-3 text-white">
-                                <i class="bi bi-gear"></i>
-                            </a>
-                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-link text-white p-0">
-                                    <i class="bi bi-person-circle"></i> Logout
-                                </button>
-                            </form>
-                        </div>
-                    }
-                </div>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-link text-white p-0">
+                                        <i class="bi bi-person-circle"></i> Logout
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
             </div>
         </nav>
     </header>
+    }
 
     <div class="container">
         <main role="main" class="pb-3">

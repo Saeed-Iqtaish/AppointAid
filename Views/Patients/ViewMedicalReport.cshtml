@@ -1,0 +1,20 @@
+﻿@model AppointAid.Models.PatientReport
+
+<div class="container mt-4">
+    <h1 class="text-center">Medical Report</h1>
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h4 class="m-0">Report Details</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Patient Name:</strong> @Model.Patient?.FullName ?? "Unknown"</p>
+            <p><strong>Symptoms:</strong> @Model.PatientSymptoms ?? "Not Provided"</p>
+            <p><strong>Diagnosis:</strong> @Model.Diagnosis ?? "Not Provided"</p>
+            <p><strong>Treatment:</strong> @Model.Treatment ?? "Not Provided"</p>
+            <p><strong>Severity:</strong> @Model.Severity?.ToString() ?? "Not Assessed"</p>
+        </div>
+        <div class="card-footer text-center">
+            <a href="@Url.Action("MedicalAppointments", "Patients")" class="btn btn-primary">Back to Appointments</a>
+        </div>
+    </div>
+</div>

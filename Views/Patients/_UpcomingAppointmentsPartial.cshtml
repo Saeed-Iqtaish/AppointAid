@@ -1,0 +1,53 @@
+﻿@model IEnumerable<AppointAid.Models.Appointment>
+
+@if (Model != null && Model.Any())
+{
+    foreach (var appointment in Model)
+    {
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(appointment.Doctor?.FullName))
+                {
+                    <p><strong>Doctor:</strong> Dr. @appointment.Doctor.FullName</p>
+                }
+
+                @if (!string.IsNullOrEmpty(appointment.Doctor?.Sector?.MedicalCenter?.MedicalCenterName))
+                {
+                    <p><strong>Medical Center:</strong> @appointment.Doctor.Sector.MedicalCenter.MedicalCenterName</p>
+                }
+
+                @if (!string.IsNullOrEmpty(appointment.Doctor?.Sector?.Name))
+                {
+                    <p><strong>Sector:</strong> @appointment.Doctor.Sector.Name</p>
+                }
+
+                <p>
+                    <strong>Date:</strong>
+                    @if (appointment.TimeSlot != null)
+                    {
+                        var appointmentDateTime = appointment.TimeSlot.Date.Add(appointment.TimeSlot.StartTime);
+                        @appointmentDateTime.ToString("MMMM dd, yyyy h:mm tt")
+                        ;
+                    }
+                    else
+                    {
+                        @:Not Scheduled
+                    }
+                </p>
+
+                @if (!string.IsNullOrEmpty(appointment.Status))
+                {
+                    <p><strong>Status:</strong> @appointment.Status</p>
+                }
+
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-primary btn-sm">Get Location</button>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p class="text-center text-muted">No upcoming appointments available.</p>
+}

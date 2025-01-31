@@ -19,7 +19,6 @@ namespace AppointAid.Data
         public DbSet<TimeSlot> TimeSlots { get; set; }
         public DbSet<Sector> Sectors { get; set; }
         public DbSet<EmergencyResponse> EmergencyResponses { get; set; }
-        public DbSet<DoctorTimeSlot> DoctorTimeSlots { get; set; }
         public DbSet<MedicalCenter> MedicalCenters { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -124,21 +123,12 @@ namespace AppointAid.Data
                 .HasForeignKey(e => e.NurseId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Configure many-to-many relationship for Doctor <-> TimeSlot
-            modelBuilder.Entity<DoctorTimeSlot>()
-                .HasKey(dts => new { dts.DoctorId, dts.TimeSlotId }); // Composite key
-
-            modelBuilder.Entity<DoctorTimeSlot>()
-                .HasOne(dts => dts.Doctor)
-                .WithMany(d => d.DoctorTimeSlots)
-                .HasForeignKey(dts => dts.DoctorId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<DoctorTimeSlot>()
-                .HasOne(dts => dts.TimeSlot)
-                .WithMany(ts => ts.DoctorTimeSlots)
-                .HasForeignKey(dts => dts.TimeSlotId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // Doctor - TimeSlots (1 -> Many)
+            modelBuilder.Entity<TimeSlot>()
+                .HasOne(ts => ts.Doctor)
+                .WithMany(d => d.TimeSlots)
+                .HasForeignKey(ts => ts.DoctorId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

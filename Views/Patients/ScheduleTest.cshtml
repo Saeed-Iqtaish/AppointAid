@@ -1,0 +1,44 @@
+﻿@model AppointAid.ViewModels.ScheduleTestViewModel
+
+@{
+    ViewData["Title"] = "Schedule Test";
+}
+
+<div class="container mt-5">
+    <div class="card mx-auto" style="max-width: 600px;">
+        <div class="card-body">
+            <h3 class="text-center mb-4">Schedule Test</h3>
+            <form asp-action="ScheduleTest" method="post">
+                <input type="hidden" asp-for="TestId" />
+
+                <div class="mb-3">
+                    <label class="form-label">Test Name</label>
+                    <p class="form-control-plaintext">@ViewBag.TestName</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Medical Center</label>
+                    <p class="form-control-plaintext">@ViewBag.MedicalCenterName</p>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ScheduledDate" class="form-label"></label>
+                    <input asp-for="ScheduledDate" class="form-control" type="date" />
+                    <span asp-validation-for="ScheduledDate" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ScheduledTime" class="form-label"></label>
+                    <input asp-for="ScheduledTime" class="form-control" type="time" />
+                    <span asp-validation-for="ScheduledTime" class="text-danger"></span>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Confirm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

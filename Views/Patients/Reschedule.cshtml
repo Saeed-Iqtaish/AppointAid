@@ -1,0 +1,70 @@
+﻿@model AppointAid.ViewModels.RescheduleAppointmentViewModel
+
+<div class="container mx-auto my-8 p-6 bg-white rounded shadow-md">
+    <h2 class="text-xl font-bold text-center mb-6">Reschedule Appointment</h2>
+
+    <form method="post" asp-action="Reschedule">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="AppointmentId" />
+        <input type="hidden" asp-for="DoctorId" />
+
+        <div id="step-1">
+            <label for="dateDropdown">Choose New Date</label>
+            <select id="dateDropdown" class="form-control">
+                <option value="">Select</option>
+            </select>
+            <button type="button" id="confirm-day-btn" class="btn btn-primary mt-4">Confirm</button>
+        </div>
+
+        <div id="step-2" style="display: none;">
+            <label for="timeSlotDropdown">Choose Time Slot</label>
+            <select asp-for="SelectedTimeSlotId" class="form-control" id="timeSlotDropdown">
+                <option value="">Select</option>
+            </select>
+            <button type="submit" class="btn btn-primary mt-4">Reschedule</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const doctorId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DoctorId));
+        const dateDropdown = document.getElementById("dateDropdown");
+        const timeSlotDropdown = document.getElementById("timeSlotDropdown");
+        const confirmDayBtn = document.getElementById("confirm-day-btn");
+        const step2 = document.getElementById("step-2");
+
+        // Fetch available dates
+        fetch(`/Patients/GetDoctorSchedule?doctorId=${doctorId}`)
+            .then(response => response.json())
+            .then(dates => {
+                dates.forEach(date => {
+                    dateDropdown.innerHTML += `<option value="${date}">${date}</option>`;
+                });
+            })
+            .catch(error => console.error("Error fetching doctor schedule:", error));
+
+        // Handle date selection
+        confirmDayBtn.addEventListener("click", function () {
+            const selectedDate = dateDropdown.value;
+            if (!selectedDate) {
+                alert("Please select a date.");
+                return;
+            }
+
+            // Fetch available time slots for the selected date
+            fetch(`/Patients/GetAvailableTimeSlots?doctorId=${doctorId}&selectedDate=${selectedDate}`)
+                .then(response => response.json())
+                .then(slots => {
+                    timeSlotDropdown.innerHTML = '<option value="">Select</option>';
+                    slots.forEach(slot => {
+                        timeSlotDropdown.innerHTML += `<option value="${slot.timeSlotId}">${slot.startTime} - ${slot.endTime}</option>`;
+                    });
+
+                    step2.style.display = "block";
+                })
+                .catch(error => console.error("Error fetching time slots:", error));
+        });
+    });
+</script>

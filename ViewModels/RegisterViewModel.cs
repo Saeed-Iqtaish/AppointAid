@@ -48,7 +48,6 @@ namespace AppointAid.ViewModels
         [Display(Name = "Confirm Password")]
         public string ConfirmPassword { get; set; }
 
-        // Custom Password Validation
         public bool IsPasswordStrong()
         {
             var hasUpperCase = new Regex(@"[A-Z]+");

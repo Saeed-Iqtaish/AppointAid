@@ -32,7 +32,6 @@ namespace AppointAid.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Fetch reports assigned to the logged-in nurse where sector and severity are not assigned
             var reports = await _context.PatientReports
                 .Include(pr => pr.Patient)
                 .Where(pr => pr.NurseId == nurseId && pr.SectorId == null && !pr.Severity.HasValue)
@@ -41,7 +40,6 @@ namespace AppointAid.Controllers
             return View(reports);
         }
 
-        // GET: Review Report
         [HttpGet]
         public async Task<IActionResult> Review(int id)
         {
@@ -67,7 +65,6 @@ namespace AppointAid.Controllers
             return View(report);
         }
 
-        // POST: Submit Review
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Review(int id, int sectorId, int severity, string comments)
@@ -88,135 +85,6 @@ namespace AppointAid.Controllers
 
             TempData["Message"] = "Patient report reviewed successfully.";
             return RedirectToAction(nameof(Index));
-        }
-
-        // GET: Nurses/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var nurse = await _context.Nurses
-                .FirstOrDefaultAsync(m => m.NurseId == id);
-            if (nurse == null)
-            {
-                return NotFound();
-            }
-
-            return View(nurse);
-        }
-
-        // GET: Nurses/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Nurses/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("NurseId,FirstName,LastName,NationalNumber,PasswordHash")] Nurse nurse)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(nurse);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(nurse);
-        }
-
-        // GET: Nurses/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var nurse = await _context.Nurses.FindAsync(id);
-            if (nurse == null)
-            {
-                return NotFound();
-            }
-            return View(nurse);
-        }
-
-        // POST: Nurses/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("NurseId,FirstName,LastName,NationalNumber,PasswordHash")] Nurse nurse)
-        {
-            if (id != nurse.NurseId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(nurse);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!NurseExists(nurse.NurseId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(nurse);
-        }
-
-        // GET: Nurses/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var nurse = await _context.Nurses
-                .FirstOrDefaultAsync(m => m.NurseId == id);
-            if (nurse == null)
-            {
-                return NotFound();
-            }
-
-            return View(nurse);
-        }
-
-        // POST: Nurses/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var nurse = await _context.Nurses.FindAsync(id);
-            if (nurse != null)
-            {
-                _context.Nurses.Remove(nurse);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool NurseExists(int id)
-        {
-            return _context.Nurses.Any(e => e.NurseId == id);
         }
 
         [HttpGet]

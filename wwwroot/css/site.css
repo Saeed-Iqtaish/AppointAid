@@ -108,29 +108,39 @@ body {
     text-align: center;
 }
 
-/* Button Styling */
+/* General Button Styling */
 button, .btn {
     border-radius: 8px;
     padding: 10px 15px;
     font-size: 14px;
     font-weight: bold;
     border: none;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.btn-outline-primary {
-    border: 2px solid #258cfb;
-    color: #258cfb;
-    font-size: 14px;
-    font-weight: bold;
-    transition: all 0.3s ease;
+/* Primary Button */
+.btn-primary {
+    background-color: #258cfb;
+    color: white;
 }
 
-    .btn-outline-primary:hover {
-        background-color: #258cfb;
+    .btn-primary:hover {
+        background-color: #1b6fd8;
         color: white;
     }
 
+/* Secondary Button (Reschedule) */
+.btn-secondary {
+    background-color: #28a745; /* Green tone */
+    color: white;
+}
+
+    .btn-secondary:hover {
+        background-color: #218838;
+        color: white;
+    }
+
+/* Danger Button (Cancel) */
 .btn-danger {
     background-color: #dc3545;
     color: white;
@@ -138,30 +148,32 @@ button, .btn {
 
     .btn-danger:hover {
         background-color: #b21f2d;
-    }
-
-.btn-outline-primary {
-    border: 2px solid #258cfb;
-    color: #258cfb;
-    font-size: 14px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-    .btn-outline-primary:hover {
-        background-color: #258cfb;
         color: white;
     }
 
-.btn-outline-secondary {
-    border: 2px solid #6c757d;
-    color: #6c757d;
+/* Info Button (View Medical Report) */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
 }
 
-    .btn-outline-secondary:hover {
-        background-color: #6c757d;
+    .btn-info:hover {
+        background-color: #117a8b;
         color: white;
     }
+
+/* Outline Light Buttons */
+.btn-outline-light {
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    background-color: transparent;
+}
+
+    .btn-outline-light:hover {
+        background-color: #ffffff;
+        color: #258cfb;
+    }
+
 
 
 /* List Styling */
@@ -215,4 +227,31 @@ footer {
 
 .bg-primary {
     background-color: #258cfb !important;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    width: 100%;
+}
+
+footer {
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    background-color: #f8f9fa; /* Optional: Footer background */
+    padding: 1rem 0;
+}
+
+.container {
+    flex: 1;
 }
